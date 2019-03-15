@@ -3,35 +3,22 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 
 	"./lib"
 )
 
 type opts struct {
-	src             string
-	dst             string
-	buffer          int64
-	compressionType uint8
+	src        *string
+	dst        *string
+	buffersize *int64
 }
 
-var (
-	stdin         = os.Stdin
-	stdout        = os.Stdout
-	mountinfoPath = "/proc/self/mountinfo"
-	extOut        = "/Volumes/store/evidence/data/"
-)
-
 const (
-	none uint8 = 1 << iota
-	gunzip
-	bunzip
-	xunzip
-	auto = 0
-
-	defaultBufferSize = int64(10 * 1024 * 1024)
+	defaultBuffer = 10 * 1024 * 1024
+	mountinfoPath = "/proc/self/mountinfo"
 )
 
 func init() {
@@ -39,56 +26,47 @@ func init() {
 }
 
 func main() {
-	in := menu()
+	//in := menu()
+	dd := cui()
 
-	dd, err := parseargs(os.Args[1:])
-	if err != nil {
-		fmt.Println(fmt.Errorf("failed to parse args: %v", err))
-		os.Exit(1)
-	}
+	fmt.Println("Processing....")
+	start := time.Now()
+	handle(dd.run())
+	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
-	if err := run(dd); err != nil {
-		fmt.Println(fmt.Errorf("failed to dd: %v", err))
-		os.Exit(1)
-	}
+	integritycheck(*dd.dst)
+	//handle(getdata(*dd.dst, in))
 
-	md, sha, err := gethashes(dd.dst)
+	fmt.Println("Done!")
+}
+
+func getdata(dst string, in int8) error {
+	out, err := attach(dst)
+
+	mntloc := strings.Fields(string(out))[0]
+	copysrc := strings.Fields(string(out))[1]
+
+	lib.Extract(copysrc, dst, in)
+
+	_, err = detach(mntloc)
+
+	return err
+}
+
+func integritycheck(dst string) {
+	md, sha, err := gethashes(dst)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to gain hashes: %v", err))
 		os.Exit(1)
 	}
 	fmt.Println("MD5: ", md)
 	fmt.Println("SHA256: ", sha)
-
-	out, err := attach(dd.dst)
-
-	mntloc := strings.Fields(string(out))[0]
-	copysrc := strings.Fields(string(out))[1]
-
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	fmt.Println(copysrc)
-
-	lib.Extract(copysrc, dd.dst, in)
-
-	_, err = detach(mntloc)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	fmt.Println("Done!")
 }
 
-func attach(src string) ([]byte, error) {
-	return exec.Command("hdiutil", "attach", src).Output()
-}
-
-func detach(name string) ([]byte, error) {
-	return exec.Command("hdiutil", "detach", name).Output()
+func handle(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func menu() int8 {
