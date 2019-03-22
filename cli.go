@@ -50,6 +50,9 @@ func cui() opts {
 		} else if strings.HasSuffix(*dd.src, "/") || strings.HasSuffix(*dd.dst, "/") {
 			cli.usage()
 			os.Exit(0)
+		} else if err := sanityCheck(*dd.dst); err != nil {
+			cli.usage()
+			os.Exit(0)
 		}
 	}
 
