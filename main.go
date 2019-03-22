@@ -11,14 +11,17 @@ import (
 )
 
 type opts struct {
-	src        *string
-	dst        *string
-	buffersize *int64
+	src           *string
+	dst           *string
+	buffersize    *int64
+	maxthreads    *int
+	multithreaded *bool
 }
 
 const (
 	defaultBuffer = 10 * 1024 * 1024
 	mountinfoPath = "/proc/self/mountinfo"
+	partfile      = ".part"
 )
 
 func init() {
@@ -26,7 +29,7 @@ func init() {
 }
 
 func main() {
-	//in := menu()
+	in := menu()
 	dd := cui()
 
 	fmt.Println("Processing....")
@@ -34,8 +37,10 @@ func main() {
 	handle(dd.run())
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
+	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*dd.dst)
-	//handle(getdata(*dd.dst, in))
+
+	handle(getdata(*dd.dst, in))
 
 	fmt.Println("Done!")
 }
