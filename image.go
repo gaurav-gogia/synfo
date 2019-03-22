@@ -15,38 +15,35 @@ import (
 )
 
 func (dd *opts) run() error {
-	dst, err := create(*dd.dst)
-	if err != nil {
-		return err
-	}
-	dst.Close()
-
-	buff := make([]byte, *dd.buffersize)
-	read, err := unix.Open(*dd.src, unix.O_RDONLY, 0777)
-	defer unix.Close(read)
-	if err != nil {
-		panic(err)
-	}
-
-	write, err := unix.Open(*dd.dst, unix.O_WRONLY, 0777)
-	defer unix.Close(write)
-	if err != nil {
-		panic(err)
-	}
-
 	size := getsize(*dd.src)
 
-	for i := int64(0); i <= size; i += *dd.buffersize {
-		if _, err := unix.Read(read, buff); err != nil {
-			return err
-		}
-		if _, err = unix.Write(write, buff); err != nil {
-			return err
-		}
-		fmt.Printf("\rCopied %d of %d bytes", i, size)
+	for i := int64(0); i < size; i += *dd.buffersize {
+		readwrite(*dd.buffersize, *dd.src, *dd.dst)
+		fmt.Printf("\rImaging .... %d of %d done", i, size)
 	}
+	fmt.Println()
 
 	return nil
+}
+
+func readwrite(buffersize int64, src, dst string) {
+	destination, err := create(dst)
+	handle(err)
+	destination.Close()
+
+	buff := make([]byte, buffersize)
+
+	read, err := unix.Open(src, unix.O_RDONLY, 0777)
+	defer unix.Close(read)
+	handle(err)
+	write, err := unix.Open(dst, unix.O_WRONLY, 0777)
+	defer unix.Close(write)
+	handle(err)
+
+	_, err = unix.Read(read, buff)
+	handle(err)
+	_, err = unix.Write(write, buff)
+	handle(err)
 }
 
 func sanityCheck(dst string) error {
