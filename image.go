@@ -7,84 +7,47 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"golang.org/x/sys/unix"
 )
 
 func (dd *opts) run() error {
-	var thread int64
-	var names []string
-	done := make(chan bool)
 	size := getsize(*dd.src)
 
-	for i := int64(0); i < size; i += *dd.buffersize {
-		dstname := partfile + strconv.FormatInt(i, 10)
-		names = append(names, dstname)
+	destination, err := create(*dd.dst)
+	handle(err)
+	destination.Close()
 
-		go parts(*dd.buffersize, i, *dd.src, dstname, done)
-		thread++
-
-		if thread > 16 {
-			<-done
-			thread--
-		}
-
-		fmt.Printf("\rSpawning %d threads", thread)
-	}
-	fmt.Println()
-
-	for thread > 0 {
-		<-done
-		thread--
-	}
-
-	file, err := os.OpenFile(*dd.dst, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
-	defer file.Close()
+	read, err := unix.Open(*dd.src, unix.O_RDONLY, 0777)
+	defer unix.Close(read)
+	handle(err)
+	write, err := unix.Open(*dd.dst, unix.O_WRONLY, 0777)
+	defer unix.Close(write)
 	handle(err)
 
-	for _, name := range names {
-		data, err := ioutil.ReadFile(name)
-		handle(err)
-
-		_, err = file.Write(data)
-		handle(err)
-
-		os.Remove(name)
-		fmt.Printf("\rCompiling .... %s", name)
+	for i := int64(0); i < size; i += *dd.buffersize {
+		if size-i <= *dd.buffersize {
+			clone(size-i, read, write)
+		} else {
+			clone(*dd.buffersize, read, write)
+		}
+		fmt.Printf("\rProgress .... %d of %d done", i, size)
 	}
 	fmt.Println()
 
 	return nil
 }
 
-func parts(buffersize, offset int64, src, dst string, done chan bool) {
-	destination, err := create(dst)
-	handle(err)
-	destination.Close()
-
+func clone(buffersize int64, read, write int) {
 	buff := make([]byte, buffersize)
 
-	read, err := unix.Open(src, unix.O_RDONLY, 0777)
-	defer unix.Close(read)
+	_, err := unix.Read(read, buff)
 	handle(err)
-
-	write, err := unix.Open(dst, unix.O_WRONLY, 0777)
-	defer unix.Close(write)
-	handle(err)
-
-	unix.Seek(read, offset, 0)
-	_, err = unix.Read(read, buff)
-	handle(err)
-
 	_, err = unix.Write(write, buff)
 	handle(err)
-
-	done <- true
 }
 
 func sanityCheck(dst string) error {

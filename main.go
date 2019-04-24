@@ -5,17 +5,17 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"time"
 
 	"./lib"
 )
 
 type opts struct {
-	src           *string
-	dst           *string
-	buffersize    *int64
-	maxthreads    *int
-	multithreaded *bool
+	src        *string
+	dst        *string
+	poi        *string
+	buffersize *int64
+	cmdType    string
+	evidir     string
 }
 
 const (
@@ -24,38 +24,55 @@ const (
 	partfile      = ".part"
 )
 
+// Global Constants
+const (
+	AUTOCMD = "AUTO"
+	EXTCMD  = "EXTRACT"
+)
+
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
 func main() {
-	in := menu()
+	in := lib.IMAGE
 	dd := cui()
+	if dd.cmdType == EXTCMD {
+		in = menu()
+	}
 
-	fmt.Println("Processing....")
-	start := time.Now()
-	handle(dd.run())
-	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
+	/*
+		fmt.Println("Imaging ....")
+		start := time.Now()
+		handle(dd.run())
+		fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
-	fmt.Println("\nCalculating Hashes ....")
-	integritycheck(*dd.dst)
+		fmt.Println("\nCalculating Hashes ....")
+		integritycheck(*dd.dst)
+	*/
 
-	handle(getdata(*dd.dst, in))
+	count, err := getdata(*dd.dst, dd.evidir, in)
+	handle(err)
 
-	fmt.Println("Done!")
+	if dd.cmdType == AUTOCMD && count >= 0 {
+		fmt.Println("\nRunning Face Verification ....")
+		handle(lib.Verify(*dd.poi, dd.evidir))
+	}
+
+	fmt.Println("\n\nDone!")
 }
 
-func getdata(dst string, in int8) error {
+func getdata(dst, copydst string, in int) (int64, error) {
 	out, err := attach(dst)
 
 	mntloc := strings.Fields(string(out))[0]
 	copysrc := strings.Fields(string(out))[1]
 
-	lib.Extract(copysrc, dst, in)
+	count := lib.Extract(copysrc, copydst, in)
 
 	_, err = detach(mntloc)
 
-	return err
+	return count, err
 }
 
 func integritycheck(dst string) {
@@ -74,8 +91,8 @@ func handle(err error) {
 	}
 }
 
-func menu() int8 {
-	var in int8
+func menu() int {
+	var in int
 	fmt.Println("What do you wish to extract?")
 	fmt.Println("1. Picture Files")
 	fmt.Println("2. Video Files")
