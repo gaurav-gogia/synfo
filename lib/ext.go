@@ -6,23 +6,23 @@ import (
 	"os"
 	"path/filepath"
 
-	filetype "gopkg.in/h2non/filetype.v1"
+	"github.com/h2non/filetype"
 )
 
-// Extract function takes root dir, out dir and selection var
-func Extract(root, dst string, in int8) {
+// Extract function takes in root dir, destination and choice.
+// Walks through entire file structure to copy files based on their magic numbers
+func Extract(root, dst string, in int) int64 {
 	var count int64
-
 	filepath.Walk(root, func(filepath string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Println("\n", err)
 			return nil
 		}
+
 		if !info.IsDir() {
 			buf, err := ioutil.ReadFile(filepath)
 
 			switch in {
-			case 1:
+			case IMAGE:
 				if filetype.IsImage(buf) {
 					count++
 					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
@@ -31,7 +31,7 @@ func Extract(root, dst string, in int8) {
 					}
 					fmt.Printf("\rImage File Found: %s, Count: %v", info.Name(), count)
 				}
-			case 2:
+			case VIDEO:
 				if filetype.IsVideo(buf) {
 					count++
 					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
@@ -40,7 +40,7 @@ func Extract(root, dst string, in int8) {
 					}
 					fmt.Printf("\rVideo File Found: %s, Count: %v", info.Name(), count)
 				}
-			case 3:
+			case AUDIO:
 				if filetype.IsAudio(buf) {
 					count++
 					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
@@ -49,7 +49,7 @@ func Extract(root, dst string, in int8) {
 					}
 					fmt.Printf("\rAudio File Found: %s, Count: %v", info.Name(), count)
 				}
-			case 4:
+			case ARCHIVE:
 				if filetype.IsArchive(buf) {
 					count++
 					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
@@ -67,4 +67,10 @@ func Extract(root, dst string, in int8) {
 		}
 		return nil
 	})
+
+	if count == 0 {
+		fmt.Printf("\nFile not found . - .")
+	}
+
+	return count
 }

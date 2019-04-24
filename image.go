@@ -17,30 +17,34 @@ import (
 func (dd *opts) run() error {
 	size := getsize(*dd.src)
 
+	destination, err := create(*dd.dst)
+	handle(err)
+	destination.Close()
+
+	read, err := unix.Open(*dd.src, unix.O_RDONLY, 0777)
+	defer unix.Close(read)
+	handle(err)
+	write, err := unix.Open(*dd.dst, unix.O_WRONLY, 0777)
+	defer unix.Close(write)
+	handle(err)
+
 	for i := int64(0); i < size; i += *dd.buffersize {
-		readwrite(*dd.buffersize, *dd.src, *dd.dst)
-		fmt.Printf("\rImaging .... %d of %d done", i, size)
+		if size-i <= *dd.buffersize {
+			clone(size-i, read, write)
+		} else {
+			clone(*dd.buffersize, read, write)
+		}
+		fmt.Printf("\rProgress .... %d of %d done", i, size)
 	}
 	fmt.Println()
 
 	return nil
 }
 
-func readwrite(buffersize int64, src, dst string) {
-	destination, err := create(dst)
-	handle(err)
-	destination.Close()
-
+func clone(buffersize int64, read, write int) {
 	buff := make([]byte, buffersize)
 
-	read, err := unix.Open(src, unix.O_RDONLY, 0777)
-	defer unix.Close(read)
-	handle(err)
-	write, err := unix.Open(dst, unix.O_WRONLY, 0777)
-	defer unix.Close(write)
-	handle(err)
-
-	_, err = unix.Read(read, buff)
+	_, err := unix.Read(read, buff)
 	handle(err)
 	_, err = unix.Write(write, buff)
 	handle(err)
