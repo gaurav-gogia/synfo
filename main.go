@@ -5,6 +5,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"./lib"
 )
@@ -41,20 +42,18 @@ func main() {
 		in = menu()
 	}
 
-	/*
-		fmt.Println("Imaging ....")
-		start := time.Now()
-		handle(dd.run())
-		fmt.Printf("\nImaging Time: %v\n", time.Since(start))
+	fmt.Println("Imaging ....")
+	start := time.Now()
+	handle(dd.run())
+	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
-		fmt.Println("\nCalculating Hashes ....")
-		integritycheck(*dd.dst)
-	*/
+	fmt.Println("\nCalculating Hashes ....")
+	integritycheck(*dd.dst)
 
 	count, err := getdata(*dd.dst, dd.evidir, in)
 	handle(err)
 
-	if dd.cmdType == AUTOCMD && count >= 0 {
+	if dd.cmdType == AUTOCMD && count > 0 {
 		fmt.Println("\nRunning Face Verification ....")
 		handle(lib.Verify(*dd.poi, dd.evidir))
 	}
