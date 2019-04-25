@@ -83,5 +83,9 @@ func cui() opts {
 
 	dd.evidir, _ = filepath.Split(*dd.dst)
 
+	dir, name := filepath.Split(*dd.dst)
+	name = strings.TrimSuffix(name, filepath.Ext(name))
+	*dd.dst = dir + name + ".iso"
+
 	return dd
 }
