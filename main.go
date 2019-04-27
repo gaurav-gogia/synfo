@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"strings"
-	"time"
 
 	"./lib"
 )
@@ -14,13 +12,13 @@ type opts struct {
 	src        *string
 	dst        *string
 	poi        *string
-	buffersize *int64
+	buffersize *uint64
 	cmdType    string
 	evidir     string
 }
 
 const (
-	defaultBuffer = 10 * 1024 * 1024
+	defaultBuffer = 10 * 1024
 	mountinfoPath = "/proc/self/mountinfo"
 	partfile      = ".part"
 )
@@ -36,42 +34,39 @@ func init() {
 }
 
 func main() {
-	in := lib.IMAGE
+	//	in := lib.IMAGE
 	dd := cui()
 	if dd.cmdType == EXTCMD {
-		in = menu()
+		//		in = menu()
 	}
 
-	fmt.Println("Imaging ....")
-	start := time.Now()
-	handle(dd.run())
-	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
+	fmt.Println("BufferSize: ", *dd.buffersize)
 
-	fmt.Println("\nCalculating Hashes ....")
-	integritycheck(*dd.dst)
+	/*
+		fmt.Println("Imaging ....")
+		start := time.Now()
+		handle(dd.run())
+		fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
-	count, err := getdata(*dd.dst, dd.evidir, in)
-	handle(err)
+		fmt.Println("\nCalculating Hashes ....")
+		integritycheck(*dd.dst)
 
-	if dd.cmdType == AUTOCMD && count > 0 {
-		fmt.Println("\nRunning Face Verification ....")
-		handle(lib.Verify(*dd.poi, dd.evidir))
-	}
+		count, err := getdata(*dd.dst, dd.evidir, in)
+		handle(err)
 
-	fmt.Println("\n\nDone!")
+		if dd.cmdType == AUTOCMD && count > 0 {
+			fmt.Println("\nRunning Face Verification ....")
+			handle(lib.Verify(*dd.poi, dd.evidir))
+		}
 
+		fmt.Println("\n\nDone!")
+	*/
 }
 
 func getdata(dst, copydst string, in int) (int64, error) {
-	out, err := attach(dst)
-
-	mntloc := strings.Fields(string(out))[0]
-	copysrc := strings.Fields(string(out))[1]
-
+	mntloc, copysrc, err := attach(dst)
 	count := lib.Extract(copysrc, copydst, in)
-
-	_, err = detach(mntloc)
-
+	err = detach(mntloc)
 	return count, err
 }
 

@@ -28,7 +28,7 @@ func (dd *opts) run() error {
 	defer unix.Close(write)
 	handle(err)
 
-	for i := int64(0); i < size; i += *dd.buffersize {
+	for i := uint64(0); i < size; i += *dd.buffersize {
 		if size-i <= *dd.buffersize {
 			clone(size-i, read, write)
 		} else {
@@ -41,7 +41,7 @@ func (dd *opts) run() error {
 	return nil
 }
 
-func clone(buffersize int64, read, write int) {
+func clone(buffersize uint64, read, write int) {
 	buff := make([]byte, buffersize)
 
 	_, err := unix.Read(read, buff)

@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/shirou/gopsutil/mem"
 )
 
 type commandline struct{}
@@ -39,12 +41,12 @@ func cui() opts {
 		dd.src = autocmd.String("src", "", "Source root directory from where you wish to start scanning")
 		dd.dst = autocmd.String("dst", "", "Destination directory where you wish to save output file")
 		dd.poi = autocmd.String("poi", "", "Image directory of suspects' face")
-		dd.buffersize = autocmd.Int64("buff", defaultBuffer, "Buffer size that you wish to use")
+		dd.buffersize = autocmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
 		handle(autocmd.Parse(os.Args[2:]))
 	case "extract":
 		dd.src = extcmd.String("src", "", "Source root directory from where you wish to start scanning")
 		dd.dst = extcmd.String("dst", "", "Destination directory where you wish to save output file")
-		dd.buffersize = extcmd.Int64("buff", defaultBuffer, "Buffer size that you wish to use")
+		dd.buffersize = extcmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
 		handle(extcmd.Parse(os.Args[2:]))
 	default:
 		cli.usage()
@@ -55,9 +57,11 @@ func cui() opts {
 		if *dd.src == "" || *dd.dst == "" || *dd.poi == "" {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.src, "/") || strings.HasSuffix(*dd.dst, "/") {
+		} else if strings.HasSuffix(*dd.src, "/") {
 			cli.usage()
 			os.Exit(0)
+		} else if strings.HasSuffix(*dd.dst, "/") {
+			*dd.dst = "./evidence/evi.iso"
 		} else if !(strings.HasSuffix(*dd.poi, "/")) {
 			*dd.poi += "/"
 		} else if err := sanityCheck(*dd.dst); err != nil {
@@ -87,5 +91,20 @@ func cui() opts {
 	name = strings.TrimSuffix(name, filepath.Ext(name))
 	*dd.dst = dir + name + ".iso"
 
+	*dd.buffersize = fixbuffsize(*dd.buffersize)
+
 	return dd
+}
+
+func fixbuffsize(buffsize uint64) uint64 {
+	mem, _ := mem.VirtualMemory()
+	newbuff := mem.Free / 4
+
+	if buffsize < newbuff {
+		return buffsize
+	}
+
+	fmt.Println("Requested buffersize was too high. Resetting it to: ", newbuff)
+
+	return newbuff
 }
