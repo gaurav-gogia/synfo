@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
 	"./lib"
 )
@@ -34,33 +35,31 @@ func init() {
 }
 
 func main() {
-	//	in := lib.IMAGE
+	var in int
 	dd := cui()
 	if dd.cmdType == EXTCMD {
-		//		in = menu()
+		in = menu()
 	}
 
 	fmt.Println("BufferSize: ", *dd.buffersize)
 
-	/*
-		fmt.Println("Imaging ....")
-		start := time.Now()
-		handle(dd.run())
-		fmt.Printf("\nImaging Time: %v\n", time.Since(start))
+	fmt.Println("Imaging ....")
+	start := time.Now()
+	handle(dd.run())
+	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
-		fmt.Println("\nCalculating Hashes ....")
-		integritycheck(*dd.dst)
+	fmt.Println("\nCalculating Hashes ....")
+	integritycheck(*dd.dst)
 
-		count, err := getdata(*dd.dst, dd.evidir, in)
-		handle(err)
+	count, err := getdata(*dd.dst, dd.evidir, in)
+	handle(err)
 
-		if dd.cmdType == AUTOCMD && count > 0 {
-			fmt.Println("\nRunning Face Verification ....")
-			handle(lib.Verify(*dd.poi, dd.evidir))
-		}
+	if dd.cmdType == AUTOCMD && count > 0 {
+		fmt.Println("\nRunning Face Verification ....")
+		handle(lib.Verify(*dd.poi, dd.evidir))
+	}
 
-		fmt.Println("\n\nDone!")
-	*/
+	fmt.Println("\n\nDone!")
 }
 
 func getdata(dst, copydst string, in int) (int64, error) {
