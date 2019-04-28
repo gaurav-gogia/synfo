@@ -17,7 +17,17 @@ func (cli *commandline) usage() {
 	fmt.Println("  auto -src <src_device_file> -dst <dst_file_name> -poi <poi_image_dir> [-buff <buffer_size>] | performs auto forensic image analysis for face verification")
 	fmt.Println("  extract -src <src_device_file> -dst <dst_file_name> [-buff <buffer_size>] | images device & extracts specified type of files")
 	fmt.Println("  using a fully qualified dir path is recommended for <src_device_file>")
-	fmt.Println("  default buffer size is ", defaultBuffer)
+	fmt.Println("  default buffer size is ", defaultBuffer, " bytes")
+
+	fmt.Printf("\n  ---------- EXAMPLE 1 ----------\n")
+	fmt.Printf("  ./synfo auto --src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
+	fmt.Println("  ---------- EXAMPLE 2 ----------")
+	fmt.Printf("  ./synfo auto --src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000\n\n")
+
+	fmt.Println("  ---------- EXAMPLE 3 ----------")
+	fmt.Printf("  ./synfo extract --src /dev/somefile -dst ./somefolder/evi.iso\n\n")
+	fmt.Println("  ---------- EXAMPLE 4 ----------")
+	fmt.Printf("  ./synfo extract --src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
 }
 
 func (cli *commandline) validate() {
@@ -57,7 +67,7 @@ func cui() opts {
 		if *dd.src == "" || *dd.dst == "" || *dd.poi == "" {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.src, "/") {
+		} else if strings.HasSuffix(*dd.src, "/") || !(strings.HasPrefix(*dd.src, "/dev/")) {
 			cli.usage()
 			os.Exit(0)
 		} else if strings.HasSuffix(*dd.dst, "/") {
