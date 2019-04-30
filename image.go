@@ -18,21 +18,31 @@ func (dd *opts) run() error {
 	size := getsize(*dd.src)
 
 	destination, err := create(*dd.dst)
-	handle(err)
+	if err != nil {
+		return err
+	}
 	destination.Close()
 
 	read, err := unix.Open(*dd.src, unix.O_RDONLY, 0777)
 	defer unix.Close(read)
-	handle(err)
+	if err != nil {
+		return err
+	}
 	write, err := unix.Open(*dd.dst, unix.O_WRONLY, 0777)
 	defer unix.Close(write)
-	handle(err)
+	if err != nil {
+		return err
+	}
 
-	for i := int64(0); i < size; i += *dd.buffersize {
+	for i := uint64(0); i < size; i += *dd.buffersize {
 		if size-i <= *dd.buffersize {
-			clone(size-i, read, write)
+			if err := clone(size-i, read, write); err != nil {
+				return err
+			}
 		} else {
-			clone(*dd.buffersize, read, write)
+			if err := clone(*dd.buffersize, read, write); err != nil {
+				return err
+			}
 		}
 		fmt.Printf("\rProgress .... %d of %d done", i, size)
 	}
@@ -41,13 +51,18 @@ func (dd *opts) run() error {
 	return nil
 }
 
-func clone(buffersize int64, read, write int) {
+func clone(buffersize uint64, read, write int) error {
 	buff := make([]byte, buffersize)
 
-	_, err := unix.Read(read, buff)
-	handle(err)
-	_, err = unix.Write(write, buff)
-	handle(err)
+	if _, err := unix.Read(read, buff); err != nil {
+		return err
+	}
+
+	if _, err := unix.Write(write, buff); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func sanityCheck(dst string) error {

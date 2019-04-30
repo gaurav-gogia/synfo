@@ -12,8 +12,11 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [
+                "extract",
+                "-src",
                 "/dev/disk2s1",
-                "./data.iso"
+                "-dst",
+                "./evidence/data1.iso"
             ]
         }
     ]

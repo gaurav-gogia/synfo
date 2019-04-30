@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"strings"
 	"time"
 
 	"./lib"
@@ -14,13 +13,13 @@ type opts struct {
 	src        *string
 	dst        *string
 	poi        *string
-	buffersize *int64
+	buffersize *uint64
 	cmdType    string
 	evidir     string
 }
 
 const (
-	defaultBuffer = 10 * 1024 * 1024
+	defaultBuffer = 10 * 1024
 	mountinfoPath = "/proc/self/mountinfo"
 	partfile      = ".part"
 )
@@ -36,7 +35,7 @@ func init() {
 }
 
 func main() {
-	in := lib.IMAGE
+	in := 1
 	dd := cui()
 	if dd.cmdType == EXTCMD {
 		in = menu()
@@ -62,15 +61,9 @@ func main() {
 }
 
 func getdata(dst, copydst string, in int) (int64, error) {
-	out, err := attach(dst)
-
-	mntloc := strings.Fields(string(out))[0]
-	copysrc := strings.Fields(string(out))[1]
-
+	mntloc, copysrc, err := attach(dst)
 	count := lib.Extract(copysrc, copydst, in)
-
-	_, err = detach(mntloc)
-
+	err = detach(mntloc)
 	return count, err
 }
 

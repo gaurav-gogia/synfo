@@ -29,7 +29,7 @@ func Extract(root, dst string, in int) int64 {
 						fmt.Println(err)
 						return err
 					}
-					fmt.Printf("\rImage File Found: %s, Count: %v", info.Name(), count)
+					fmt.Printf("\rImage File Found: %s, Count: %d", info.Name(), count)
 				}
 			case VIDEO:
 				if filetype.IsVideo(buf) {
@@ -38,7 +38,7 @@ func Extract(root, dst string, in int) int64 {
 						fmt.Println(err)
 						return err
 					}
-					fmt.Printf("\rVideo File Found: %s, Count: %v", info.Name(), count)
+					fmt.Printf("\rVideo File Found: %s, Count: %d", info.Name(), count)
 				}
 			case AUDIO:
 				if filetype.IsAudio(buf) {
@@ -47,7 +47,7 @@ func Extract(root, dst string, in int) int64 {
 						fmt.Println(err)
 						return err
 					}
-					fmt.Printf("\rAudio File Found: %s, Count: %v", info.Name(), count)
+					fmt.Printf("\rAudio File Found: %s, Count: %d", info.Name(), count)
 				}
 			case ARCHIVE:
 				if filetype.IsArchive(buf) {
@@ -56,7 +56,7 @@ func Extract(root, dst string, in int) int64 {
 						fmt.Println(err)
 						return err
 					}
-					fmt.Printf("\rArchive File Found: %s, Count: %v", info.Name(), count)
+					fmt.Printf("\rArchive File Found: %s, Count: %d", info.Name(), count)
 				}
 			default:
 				fmt.Println("Wrong Choice")
