@@ -35,13 +35,11 @@ func init() {
 }
 
 func main() {
-	var in int
+	in := 1
 	dd := cui()
 	if dd.cmdType == EXTCMD {
 		in = menu()
 	}
-
-	fmt.Println("BufferSize: ", *dd.buffersize)
 
 	fmt.Println("Imaging ....")
 	start := time.Now()
