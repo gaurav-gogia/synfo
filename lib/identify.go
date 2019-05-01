@@ -3,7 +3,6 @@ package lib
 import (
 	"fmt"
 	"io/ioutil"
-	"strings"
 
 	"gocv.io/x/gocv"
 	"gocv.io/x/gocv/contrib"
@@ -15,12 +14,12 @@ func identify(root string, rec *contrib.LBPHFaceRecognizer) error {
 		return err
 	}
 
-	for _, i := range info {
-		if i.IsDir() || i.Name() == ".DS_Store" || strings.HasSuffix(i.Name(), ".iso") {
+	for _, file := range info {
+		if ok := confirm(root, file); !ok {
 			continue
 		}
 
-		reader, err := ioutil.ReadFile(root + i.Name())
+		reader, err := ioutil.ReadFile(root + file.Name())
 		if err != nil {
 			return err
 		}
@@ -32,7 +31,7 @@ func identify(root string, rec *contrib.LBPHFaceRecognizer) error {
 
 		conf := rec.PredictExtendedResponse(mat).Confidence
 		if conf <= 30.0 {
-			fmt.Printf("Face Found at: %s, with error rate: %f\n", root+i.Name(), conf)
+			fmt.Printf("Face Found at: %s, with error rate: %f\n", root+file.Name(), conf)
 		}
 
 		mat.Close()

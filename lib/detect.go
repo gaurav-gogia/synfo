@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/h2non/filetype"
 	"gocv.io/x/gocv"
 )
 
@@ -36,26 +35,13 @@ func detect(root, savedir string, net *gocv.Net) error {
 		detections := gocv.GetBlobChannel(detBlob, 0, 0)
 		defer detections.Close()
 
-		name := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())) + ".jpg"
+		name := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())) + ".jpeg"
 
 		save(savedir+name, &detections, &img)
 		img.Close()
 	}
 
 	return nil
-}
-
-func confirm(path string, finfo os.FileInfo) bool {
-	if finfo.IsDir() || finfo.Name() == ".DS_Store" {
-		return false
-	}
-
-	buff, _ := ioutil.ReadFile(path + finfo.Name())
-	if filetype.IsImage(buff) {
-		return true
-	}
-
-	return false
 }
 
 func readfile(root string, file os.FileInfo) (gocv.Mat, error) {
