@@ -18,12 +18,12 @@ func train(root string) (*contrib.LBPHFaceRecognizer, error) {
 		return nil, err
 	}
 
-	for _, i := range info {
-		if i.IsDir() || i.Name() == ".DS_Store" {
+	for _, file := range info {
+		if ok := confirm(root, file); !ok {
 			continue
 		}
 
-		reader, err := ioutil.ReadFile(root + i.Name())
+		reader, err := ioutil.ReadFile(root + file.Name())
 		if err != nil {
 			return nil, err
 		}

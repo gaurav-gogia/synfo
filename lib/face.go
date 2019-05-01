@@ -3,7 +3,10 @@ package lib
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 
+	"github.com/h2non/filetype"
 	"gocv.io/x/gocv"
 )
 
@@ -50,4 +53,17 @@ func prepareNet(net *gocv.Net) error {
 	net.SetPreferableTarget(gocv.NetTargetType(target))
 
 	return nil
+}
+
+func confirm(path string, finfo os.FileInfo) bool {
+	if finfo.IsDir() || finfo.Name() == ".DS_Store" {
+		return false
+	}
+
+	buff, _ := ioutil.ReadFile(path + finfo.Name())
+	if filetype.IsImage(buff) {
+		return true
+	}
+
+	return false
 }
