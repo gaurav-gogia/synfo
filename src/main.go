@@ -9,27 +9,6 @@ import (
 	"./lib"
 )
 
-type opts struct {
-	src        *string
-	dst        *string
-	poi        *string
-	buffersize *uint64
-	cmdType    string
-	evidir     string
-}
-
-const (
-	defaultBuffer = 10 * 1024
-	mountinfoPath = "/proc/self/mountinfo"
-	partfile      = ".part"
-)
-
-// Global Constants
-const (
-	AUTOCMD = "AUTO"
-	EXTCMD  = "EXTRACT"
-)
-
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }

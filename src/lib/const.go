@@ -10,4 +10,7 @@ const (
 	CONFIG   = "./data/deploy.prototxt"
 	TESTPOI  = "./data/test_poi/"
 	TRAINPOI = "./data/train_poi/"
+
+	mountinfoPath = "/proc/self/mountinfo"
+	partfile      = ".part"
 )

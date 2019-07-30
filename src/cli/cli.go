@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"flag"
@@ -11,6 +11,15 @@ import (
 )
 
 type commandline struct{}
+
+type opts struct {
+	src        *string
+	dst        *string
+	poi        *string
+	buffersize *uint64
+	cmdType    string
+	evidir     string
+}
 
 func (cli *commandline) usage() {
 	fmt.Println("Usage: ")
