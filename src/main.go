@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"time"
 
+	"./cli/"
 	"./lib"
 )
 
@@ -15,26 +16,26 @@ func init() {
 
 func main() {
 	in := 1
-	dd := cui()
-	if dd.cmdType == EXTCMD {
+	dd := cli.NewCli()
+	if dd.cmdType == cli.EXTCMD {
 		in = menu()
 	}
 
 	fmt.Println("Imaging ....")
 	start := time.Now()
-	handle(dd.run())
+	lib.Handle(dd.run())
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*dd.dst)
 
 	count, err := getdata(*dd.dst, dd.evidir, in)
-	handle(err)
+	lib.Handle(err)
 
-	if dd.cmdType == AUTOCMD && count > 0 {
-		fmt.Println("\nRunning Face Verification ....")
-		handle(lib.Verify(*dd.poi, dd.evidir))
-	}
+	/*
+		TODO:
+			Make RPC call or IPC call or something to python script to implement face recognition
+	*/
 
 	fmt.Println("\n\nDone!")
 }
@@ -54,12 +55,6 @@ func integritycheck(dst string) {
 	}
 	fmt.Println("MD5: ", md)
 	fmt.Println("SHA256: ", sha)
-}
-
-func handle(err error) {
-	if err != nil {
-		fmt.Println(err)
-	}
 }
 
 func menu() int {

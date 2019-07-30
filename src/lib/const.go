@@ -6,11 +6,10 @@ const (
 	VIDEO
 	AUDIO
 	ARCHIVE
-	MODEL    = "./data/ssd.caffemodel"
-	CONFIG   = "./data/deploy.prototxt"
-	TESTPOI  = "./data/test_poi/"
-	TRAINPOI = "./data/train_poi/"
+)
 
+// Internal constants
+const (
 	mountinfoPath = "/proc/self/mountinfo"
 	partfile      = ".part"
 )

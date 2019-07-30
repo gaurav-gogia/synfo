@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"./lib"
 	"github.com/shirou/gopsutil/mem"
 )
 
-type commandline struct{}
-
-type opts struct {
+// CommandLine is the exported data structure for CLI options
+type CommandLine struct {
 	src        *string
 	dst        *string
 	poi        *string
@@ -21,7 +21,7 @@ type opts struct {
 	evidir     string
 }
 
-func (cli *commandline) usage() {
+func (cli *CommandLine) usage() {
 	fmt.Println("Usage: ")
 	fmt.Println("  auto -src <src_device_file> -dst <dst_file_name> -poi <poi_image_dir> [-buff <buffer_size>] | performs auto forensic image analysis for face verification")
 	fmt.Println("  extract -src <src_device_file> -dst <dst_file_name> [-buff <buffer_size>] | images device & extracts specified type of files")
@@ -39,16 +39,16 @@ func (cli *commandline) usage() {
 	fmt.Printf("  ./synfo extract --src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
 }
 
-func (cli *commandline) validate() {
+func (cli *CommandLine) validate() {
 	if len(os.Args) < 2 {
 		cli.usage()
 		os.Exit(0)
 	}
 }
 
-func cui() opts {
-	var dd opts
-	var cli commandline
+// NewCli is the entry point function for initializing CLI
+func NewCli() CommandLine {
+	var cli CommandLine
 
 	cli.validate()
 
@@ -57,62 +57,62 @@ func cui() opts {
 
 	switch os.Args[1] {
 	case "auto":
-		dd.src = autocmd.String("src", "", "Source root directory from where you wish to start scanning")
-		dd.dst = autocmd.String("dst", "", "Destination directory where you wish to save output file")
-		dd.poi = autocmd.String("poi", "", "Image directory of suspects' face")
-		dd.buffersize = autocmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
-		handle(autocmd.Parse(os.Args[2:]))
+		cli.src = autocmd.String("src", "", "Source root directory from where you wish to start scanning")
+		cli.dst = autocmd.String("dst", "", "Destination directory where you wish to save output file")
+		cli.poi = autocmd.String("poi", "", "Image directory of suspects' face")
+		cli.buffersize = autocmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
+		lib.Handle(autocmd.Parse(os.Args[2:]))
 	case "extract":
-		dd.src = extcmd.String("src", "", "Source root directory from where you wish to start scanning")
-		dd.dst = extcmd.String("dst", "", "Destination directory where you wish to save output file")
-		dd.buffersize = extcmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
-		handle(extcmd.Parse(os.Args[2:]))
+		cli.src = extcmd.String("src", "", "Source root directory from where you wish to start scanning")
+		cli.dst = extcmd.String("dst", "", "Destination directory where you wish to save output file")
+		cli.buffersize = extcmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
+		lib.Handle(extcmd.Parse(os.Args[2:]))
 	default:
 		cli.usage()
 		os.Exit(0)
 	}
 
 	if autocmd.Parsed() {
-		if *dd.src == "" || *dd.dst == "" || *dd.poi == "" {
+		if *cli.src == "" || *cli.dst == "" || *cli.poi == "" {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.src, "/") || !(strings.HasPrefix(*dd.src, "/dev/")) {
+		} else if strings.HasSuffix(*cli.src, "/") || !(strings.HasPrefix(*cli.src, "/dev/")) {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.dst, "/") {
-			*dd.dst = "./evidence/evi.iso"
-		} else if !(strings.HasSuffix(*dd.poi, "/")) {
-			*dd.poi += "/"
-		} else if err := sanityCheck(*dd.dst); err != nil {
+		} else if strings.HasSuffix(*cli.dst, "/") {
+			*cli.dst = "./evidence/evi.iso"
+		} else if !(strings.HasSuffix(*cli.poi, "/")) {
+			*cli.poi += "/"
+		} else if err := sanityCheck(*cli.dst); err != nil {
 			cli.usage()
 			os.Exit(0)
 		}
-		dd.cmdType = AUTOCMD
+		cli.cmdType = AUTOCMD
 	}
 
 	if extcmd.Parsed() {
-		if *dd.src == "" || *dd.dst == "" {
+		if *cli.src == "" || *cli.dst == "" {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.src, "/") || strings.HasSuffix(*dd.dst, "/") {
+		} else if strings.HasSuffix(*cli.src, "/") || strings.HasSuffix(*cli.dst, "/") {
 			cli.usage()
 			os.Exit(0)
-		} else if err := sanityCheck(*dd.dst); err != nil {
+		} else if err := sanityCheck(*cli.dst); err != nil {
 			cli.usage()
 			os.Exit(0)
 		}
-		dd.cmdType = EXTCMD
+		cli.cmdType = EXTCMD
 	}
 
-	dd.evidir, _ = filepath.Split(*dd.dst)
+	cli.evidir, _ = filepath.Split(*cli.dst)
 
-	dir, name := filepath.Split(*dd.dst)
+	dir, name := filepath.Split(*cli.dst)
 	name = strings.TrimSuffix(name, filepath.Ext(name))
-	*dd.dst = dir + name + ".iso"
+	*cli.dst = dir + name + ".iso"
 
-	*dd.buffersize = fixbuffsize(*dd.buffersize)
+	*cli.buffersize = fixbuffsize(*cli.buffersize)
 
-	return dd
+	return cli
 }
 
 func fixbuffsize(buffsize uint64) uint64 {
