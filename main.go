@@ -49,15 +49,11 @@ func main() {
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*dd.dst)
 
-	count, err := getdata(*dd.dst, dd.evidir, in)
+	_, err := getdata(*dd.dst, dd.evidir, in)
 	handle(err)
 
-	if dd.cmdType == AUTOCMD && count > 0 {
-		fmt.Println("\nRunning Face Verification ....")
-		handle(lib.Verify(*dd.poi, dd.evidir))
-	}
-
-	fmt.Println("\n\nDone!")
+	fmt.Println("Running face recognition ....")
+	pyIdentify(*dd.poi, dd.evidir)
 }
 
 func getdata(dst, copydst string, in int) (int64, error) {

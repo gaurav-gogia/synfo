@@ -57,3 +57,7 @@ func getnum(data string) uint64 {
 	size, _ := strconv.ParseInt(strings.Split(txt, "-")[3], 10, 64)
 	return uint64(size)
 }
+
+func pyIdentify(poiTrain, poiTest string) error {
+	return exec.Command("./libpy/face.py", poiTrain, poiTest).Run()
+}

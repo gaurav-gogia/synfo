@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/shirou/gopsutil/mem"
 )
 
 type commandline struct{}
@@ -107,14 +105,11 @@ func cui() opts {
 }
 
 func fixbuffsize(buffsize uint64) uint64 {
-	mem, _ := mem.VirtualMemory()
-	newbuff := mem.Free / 4
-
-	if buffsize < newbuff {
+	if buffsize < 50*1024 {
 		return buffsize
 	}
 
-	fmt.Println("Requested buffersize was too high. Resetting it to: ", newbuff)
+	fmt.Println("Requested buffersize was too high. Resetting it to: ", defaultBuffer)
 
-	return newbuff
+	return defaultBuffer
 }

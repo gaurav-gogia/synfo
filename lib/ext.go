@@ -23,41 +23,13 @@ func Extract(root, dst string, in int) int64 {
 
 			switch in {
 			case IMAGE:
-				if filetype.IsImage(buf) {
-					count++
-					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
-						fmt.Println(err)
-						return err
-					}
-					fmt.Printf("\rImage File Found: %s, Count: %d", info.Name(), count)
-				}
+				copyimage(&buf, &count, dst+"images/", info.Name())
 			case VIDEO:
-				if filetype.IsVideo(buf) {
-					count++
-					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
-						fmt.Println(err)
-						return err
-					}
-					fmt.Printf("\rVideo File Found: %s, Count: %d", info.Name(), count)
-				}
+				copyvideo(&buf, &count, dst+"videos/", info.Name())
 			case AUDIO:
-				if filetype.IsAudio(buf) {
-					count++
-					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
-						fmt.Println(err)
-						return err
-					}
-					fmt.Printf("\rAudio File Found: %s, Count: %d", info.Name(), count)
-				}
+				copyaudio(&buf, &count, dst+"audios/", info.Name())
 			case ARCHIVE:
-				if filetype.IsArchive(buf) {
-					count++
-					if err := ioutil.WriteFile(dst+info.Name(), buf, 0644); err != nil {
-						fmt.Println(err)
-						return err
-					}
-					fmt.Printf("\rArchive File Found: %s, Count: %d", info.Name(), count)
-				}
+				copyarchive(&buf, &count, dst+"archives/", info.Name())
 			default:
 				fmt.Println("Wrong Choice")
 				return nil
@@ -73,4 +45,62 @@ func Extract(root, dst string, in int) int64 {
 	}
 
 	return count
+}
+
+func copyimage(buf *[]byte, count *int64, dst, name string) error {
+	var err error
+	filetypedir(dst)
+
+	if filetype.IsImage(*buf) {
+		*count++
+		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		fmt.Printf("\rImage File Found: %s, Count: %v", name, count)
+	}
+
+	return err
+}
+
+func copyvideo(buf *[]byte, count *int64, dst, name string) error {
+	var err error
+	filetypedir(dst)
+
+	if filetype.IsVideo(*buf) {
+		*count++
+		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		fmt.Printf("\rVideo File Found: %s, Count: %v", name, count)
+	}
+
+	return err
+}
+
+func copyaudio(buf *[]byte, count *int64, dst, name string) error {
+	var err error
+	filetypedir(dst)
+
+	if filetype.IsAudio(*buf) {
+		*count++
+		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		fmt.Printf("\rAudio File Found: %s, Count: %v", name, count)
+	}
+
+	return err
+}
+
+func copyarchive(buf *[]byte, count *int64, dst, name string) error {
+	var err error
+	filetypedir(dst)
+
+	if filetype.IsArchive(*buf) {
+		*count++
+		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		fmt.Printf("\rArchive File Found: %s, Count: %v", name, count)
+	}
+
+	return err
+}
+
+func filetypedir(path string) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.Mkdir(path, 0777)
+	}
 }
