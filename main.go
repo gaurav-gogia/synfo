@@ -52,8 +52,10 @@ func main() {
 	_, err := getdata(*dd.dst, dd.evidir, in)
 	handle(err)
 
-	fmt.Println("Running face recognition ....")
-	pyIdentify(*dd.poi, dd.evidir)
+	if in == 1 {
+		fmt.Println("Running face recognition ....")
+		pyIdentify(*dd.poi, dd.evidir+"images/")
+	}
 }
 
 func getdata(dst, copydst string, in int) (int64, error) {
