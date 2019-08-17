@@ -9,15 +9,6 @@ import (
 	"./lib"
 )
 
-type opts struct {
-	src        *string
-	dst        *string
-	poi        *string
-	buffersize *uint64
-	cmdType    string
-	evidir     string
-}
-
 const (
 	defaultBuffer = 10 * 1024
 	mountinfoPath = "/proc/self/mountinfo"
@@ -36,25 +27,25 @@ func init() {
 
 func main() {
 	in := 1
-	dd := cui()
-	if dd.cmdType == EXTCMD {
+	cli := NewCli()
+	if cli.CmdType == EXTCMD {
 		in = menu()
 	}
 
 	fmt.Println("Imaging ....")
 	start := time.Now()
-	handle(dd.run())
+	handle(Run(cli))
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
 	fmt.Println("\nCalculating Hashes ....")
-	integritycheck(*dd.dst)
+	integritycheck(*cli.DST)
 
-	_, err := getdata(*dd.dst, dd.evidir, in)
+	_, err := getdata(*cli.DST, cli.EviDir, in)
 	handle(err)
 
 	if in == 1 {
 		fmt.Println("Running face recognition ....")
-		pyIdentify(*dd.poi, dd.evidir+"images/")
+		pyIdentify(*cli.PoI, cli.EviDir+"images/")
 	}
 }
 
