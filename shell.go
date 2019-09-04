@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -8,7 +10,8 @@ import (
 )
 
 func attach(src string) (string, string, error) {
-	out, err := exec.Command("hdiutil", "attach", src).Output()
+	mntpoint := genname(6)
+	out, err := exec.Command("hdiutil", "attach", "-mountpoint", mntpoint, src).Output()
 	if err != nil {
 		return "", "", err
 	}
@@ -36,6 +39,15 @@ func getsize(path string) uint64 {
 	}
 
 	return size
+}
+
+func genname(length int) string {
+	randomBytes := make([]byte, 32)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
+	}
+	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }
 
 func fixspace(data string) string {
