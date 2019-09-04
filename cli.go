@@ -26,14 +26,14 @@ func (cli *CommandLine) usage() {
 	fmt.Println("  default buffer size is ", defaultBuffer, " bytes")
 
 	fmt.Printf("\n  ---------- EXAMPLE 1 ----------\n")
-	fmt.Printf("  ./synfo auto --src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
+	fmt.Printf("  ./synfo auto -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
 	fmt.Println("  ---------- EXAMPLE 2 ----------")
-	fmt.Printf("  ./synfo auto --src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000\n\n")
+	fmt.Printf("  ./synfo auto -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000\n\n")
 
 	fmt.Println("  ---------- EXAMPLE 3 ----------")
-	fmt.Printf("  ./synfo extract --src /dev/somefile -dst ./somefolder/evi.iso\n\n")
+	fmt.Printf("  ./synfo extract -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
 	fmt.Println("  ---------- EXAMPLE 4 ----------")
-	fmt.Printf("  ./synfo extract --src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
+	fmt.Printf("  ./synfo extract -src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
 }
 
 func (cli *CommandLine) validate() {
