@@ -15,12 +15,12 @@ func Extract(root, dst string, in int) int64 {
 	var count int64
 	filepath.Walk(root, func(filepath string, info os.FileInfo, err error) error {
 		if err != nil {
+			fmt.Println(err)
 			return nil
 		}
 
 		if !info.IsDir() {
 			buf, err := ioutil.ReadFile(filepath)
-
 			switch in {
 			case IMAGE:
 				copyimage(&buf, &count, dst+"images/", info.Name())

@@ -1,5 +1,7 @@
 import sys
+import time
 import glob
+import datetime
 import face_recognition
 from colorama import Fore, Style
 
@@ -42,13 +44,22 @@ def compare_images(test_file_names: list, train_file_names: list):
 
 
 def main():
+    start = time.time()
+
     test_dir = sys.argv[1]
     train_dir = sys.argv[2]
 
-    test_file_names = glob.glob(test_dir+"*")
-    train_file_names = glob.glob(train_dir+"*")
+    if test_dir == "" or train_dir == "":
+        print("Paths cannot be empty")
+    else:
+        test_file_names = glob.glob(test_dir+"*")
+        train_file_names = glob.glob(train_dir+"*")
 
-    compare_images(test_file_names, train_file_names)
+        compare_images(test_file_names, train_file_names)
+
+        end = time.time()
+        print(Style.RESET_ALL)
+        print('\nElapsed Time: ', str(datetime.timedelta(seconds=end - start)))
 
 
 if __name__ == "__main__":

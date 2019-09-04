@@ -43,7 +43,7 @@ func main() {
 	_, err := getdata(*cli.DST, cli.EviDir, in)
 	handle(err)
 
-	if in == 1 {
+	if cli.CmdType == AUTOCMD {
 		fmt.Println("Running face recognition ....")
 		pyIdentify(*cli.PoI, cli.EviDir+"images/")
 	}
