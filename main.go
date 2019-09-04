@@ -40,8 +40,7 @@ func main() {
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*cli.DST)
 
-	_, err := getdata(*cli.DST, cli.EviDir, in)
-	handle(err)
+	handle(getdata(*cli.DST, cli.EviDir, in))
 
 	if cli.CmdType == AUTOCMD {
 		fmt.Println("Running face recognition ....")
@@ -49,11 +48,13 @@ func main() {
 	}
 }
 
-func getdata(dst, copydst string, in int) (int64, error) {
+func getdata(dst, copydst string, in int) error {
 	mntloc, copysrc, err := attach(dst)
-	count := lib.Extract(copysrc, copydst, in)
-	err = detach(mntloc)
-	return count, err
+	if err != nil {
+		return err
+	}
+	lib.Extract(copysrc, copydst, in)
+	return detach(mntloc)
 }
 
 func integritycheck(dst string) {
