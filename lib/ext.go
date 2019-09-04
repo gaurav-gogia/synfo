@@ -11,11 +11,11 @@ import (
 
 // Extract function takes in root dir, destination and choice.
 // Walks through entire file structure to copy files based on their magic numbers
-func Extract(root, dst string, in int) int64 {
+func Extract(root, dst string, in int) {
 	var count int64
 	filepath.Walk(root, func(filepath string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Println(err)
+			fmt.Print("\n", err, "\n\n")
 			return nil
 		}
 
@@ -43,8 +43,6 @@ func Extract(root, dst string, in int) int64 {
 	if count == 0 {
 		fmt.Printf("\nFile not found . - .")
 	}
-
-	return count
 }
 
 func copyimage(buf *[]byte, count *int64, dst, name string) error {
@@ -54,7 +52,7 @@ func copyimage(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsImage(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rImage File Found: %s, Count: %v", name, count)
+		fmt.Printf("\rImage File Found: %s, Count: %v", name, *count)
 	}
 
 	return err
@@ -67,7 +65,7 @@ func copyvideo(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsVideo(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rVideo File Found: %s, Count: %v", name, count)
+		fmt.Printf("\rVideo File Found: %s, Count: %v", name, *count)
 	}
 
 	return err
@@ -80,7 +78,7 @@ func copyaudio(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsAudio(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rAudio File Found: %s, Count: %v", name, count)
+		fmt.Printf("\rAudio File Found: %s, Count: %v", name, *count)
 	}
 
 	return err
@@ -93,7 +91,7 @@ func copyarchive(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsArchive(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rArchive File Found: %s, Count: %v", name, count)
+		fmt.Printf("\rArchive File Found: %s, Count: %v", name, *count)
 	}
 
 	return err
