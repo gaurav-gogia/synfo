@@ -32,6 +32,7 @@ func main() {
 		in = menu()
 	}
 
+	fmt.Println("BufferSize: ", *cli.BufferSize)
 	fmt.Println("Imaging ....")
 	start := time.Now()
 	handle(Run(cli))
