@@ -35,18 +35,27 @@ func main() {
 	fmt.Println("BufferSize: ", *cli.BufferSize)
 	fmt.Println("Imaging ....")
 	start := time.Now()
-	handle(Run(cli))
+	if err := Run(cli); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*cli.DST)
 
 	handle(getdata(*cli.DST, cli.EviDir, in))
-
 	if cli.CmdType == AUTOCMD {
-		fmt.Println("Running face recognition ....")
-		pyIdentify(*cli.PoI, cli.EviDir+"images/")
+		fmt.Println("\n\nRunning face recognition ....")
+		start = time.Now()
+		if err := pyIdentify(*cli.PoI, "./evidence/images/"); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Printf("\nPoI Identification Time: %v\n", time.Since(start))
 	}
+
+	fmt.Println("Done!")
 }
 
 func getdata(dst, copydst string, in int) error {

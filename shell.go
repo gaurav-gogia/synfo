@@ -32,7 +32,7 @@ func getsize(path string) uint64 {
 
 	for _, str := range info {
 		text := fixspace(str)
-		if strings.HasPrefix(text, "Disk") {
+		if strings.HasPrefix(text, "Disk Size:") {
 			size = getnum(text)
 			break
 		}
@@ -71,5 +71,5 @@ func getnum(data string) uint64 {
 }
 
 func pyIdentify(poiTrain, poiTest string) error {
-	return exec.Command("./libpy/face.py", poiTrain, poiTest).Run()
+	return exec.Command("python3", "./libpy/face.py", poiTest, poiTrain).Run()
 }
