@@ -44,12 +44,12 @@ func main() {
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*cli.DST)
 
-	handle(getdata("/Users/gauravgogia/Desktop/testdir/", "./evidence/", in))
+	handle(getdata(*cli.DST, cli.EviDir, in))
 
 	if cli.CmdType == AUTOCMD {
 		fmt.Println("\n\nRunning face recognition ....")
 		start = time.Now()
-		if err := pyIdentify(*cli.PoI, "./evidence/images/"); err != nil {
+		if err := pyIdentify(*cli.PoI, *cli.DST+"images/"); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
