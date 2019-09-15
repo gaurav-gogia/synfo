@@ -44,7 +44,8 @@ func main() {
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*cli.DST)
 
-	handle(getdata(*cli.DST, cli.EviDir, in))
+	handle(getdata("/Users/gauravgogia/Desktop/testdir/", "./evidence/", in))
+
 	if cli.CmdType == AUTOCMD {
 		fmt.Println("\n\nRunning face recognition ....")
 		start = time.Now()
@@ -55,7 +56,7 @@ func main() {
 		fmt.Printf("\nPoI Identification Time: %v\n", time.Since(start))
 	}
 
-	fmt.Println("Done!")
+	fmt.Println("\nDone!")
 }
 
 func getdata(dst, copydst string, in int) error {
