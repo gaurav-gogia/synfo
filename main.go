@@ -49,7 +49,7 @@ func main() {
 	if cli.CmdType == AUTOCMD {
 		fmt.Println("\n\nRunning face recognition ....")
 		start = time.Now()
-		if err := pyIdentify(*cli.PoI, *cli.DST+"images/"); err != nil {
+		if err := pyIdentify(cli.EviDir+"images/", *cli.PoI); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

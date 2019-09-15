@@ -104,7 +104,7 @@ def main():
     train_dir = sys.argv[2]
 
     if test_dir == "" or train_dir == "":
-        print("Paths cannot be empty")
+        print("Paths cannot be empty", file=outfile)
     else:
         test_file_names = glob.glob(test_dir+"*")
         train_file_names = glob.glob(train_dir+"*")
