@@ -70,6 +70,6 @@ func getnum(data string) uint64 {
 	return uint64(size)
 }
 
-func pyIdentify(poitest, poitrain string) error {
-	return exec.Command("python3", "./libpy/face.py", poitest, poitrain).Run()
+func pyIdentify(poitest, poitrain, modeltype string) error {
+	return exec.Command("python3", "./libpy/face.py", poitest, poitrain, modeltype).Run()
 }

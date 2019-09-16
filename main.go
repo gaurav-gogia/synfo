@@ -11,6 +11,7 @@ import (
 
 const (
 	defaultBuffer = 10 * 1024
+	defaultModel  = "hog"
 	mountinfoPath = "/proc/self/mountinfo"
 	partfile      = ".part"
 )
@@ -48,8 +49,8 @@ func main() {
 
 	if cli.CmdType == AUTOCMD {
 		fmt.Println("\n\nRunning face recognition ....")
-		start = time.Now()
-		if err := pyIdentify(cli.EviDir+"images/", *cli.PoI); err != nil {
+		start := time.Now()
+		if err := pyIdentify(cli.EviDir+"images/", *cli.PoI, *cli.ModelType); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

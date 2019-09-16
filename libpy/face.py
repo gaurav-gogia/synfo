@@ -5,13 +5,18 @@ import datetime
 import face_recognition
 
 
-def match(test: str, train_file_names: list, outfile):
+def match(test: str, train_file_names: list, outfile, model_type: str):
     for train in train_file_names:
         test_img = face_recognition.load_image_file(test)
-        test_enc = face_recognition.face_encodings(test_img)
+        test_loc = face_recognition.face_locations(test_img, model=model_type)
+        test_enc = face_recognition.face_encodings(
+            test_img, known_face_locations=test_loc, num_jitters=5, model_size="large")
 
         train_img = face_recognition.load_image_file(train)
-        train_enc = face_recognition.face_encodings(train_img)
+        train_loc = face_recognition.face_locations(
+            train_img, model=model_type)
+        train_enc = face_recognition.face_encodings(
+            train_img, known_face_locations=train_loc, num_jitters=5, model_size="large")
 
         if (len(test_enc) == 1) and (len(train_enc) == 1):
             test_enc = test_enc[0]
@@ -87,12 +92,13 @@ def match_both_phase2(test: str, train: str, outfile: str, test_findex: int, tes
         i += 1
 
 
-def compare_images(test_file_names: list, train_file_names: list, outfile):
+def compare_images(test_file_names: list, train_file_names: list, outfile, model_type: str):
     x = 1
     for test in test_file_names:
         print('#######################################################################', file=outfile)
         print('Phase: ', x, file=outfile)
-        match(test, train_file_names, outfile)
+
+        match(test, train_file_names, outfile, model_type)
         x += 1
         print('#######################################################################', file=outfile)
 
@@ -102,14 +108,17 @@ def main():
 
     test_dir = sys.argv[1]
     train_dir = sys.argv[2]
+    model_type = sys.argv[3]
 
     if test_dir == "" or train_dir == "":
-        print("Paths cannot be empty", file=outfile)
-    else:
+        print("ERROR: Paths cannot be empty", file=outfile)
+    elif model_type == "cnn" or model_type == "hog":
         test_file_names = glob.glob(test_dir+"*")
         train_file_names = glob.glob(train_dir+"*")
 
-        compare_images(test_file_names, train_file_names, outfile)
+        compare_images(test_file_names, train_file_names, outfile, model_type)
+    else:
+        print("ERROR: Model type can only be either cnn or hog", file=outfile)
 
     outfile.close()
 
