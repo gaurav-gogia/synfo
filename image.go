@@ -14,33 +14,34 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func (dd *opts) run() error {
-	size := getsize(*dd.src)
+// Run function is the entrypoint for disk imaging, it runs disk imaging
+func Run(cli CommandLine) error {
+	size := getsize(*cli.SRC)
 
-	destination, err := create(*dd.dst)
+	destination, err := create(*cli.DST)
 	if err != nil {
 		return err
 	}
 	destination.Close()
 
-	read, err := unix.Open(*dd.src, unix.O_RDONLY, 0777)
+	read, err := unix.Open(*cli.SRC, unix.O_RDONLY, 0777)
 	defer unix.Close(read)
 	if err != nil {
 		return err
 	}
-	write, err := unix.Open(*dd.dst, unix.O_WRONLY, 0777)
+	write, err := unix.Open(*cli.DST, unix.O_WRONLY, 0777)
 	defer unix.Close(write)
 	if err != nil {
 		return err
 	}
 
-	for i := uint64(0); i < size; i += *dd.buffersize {
-		if size-i <= *dd.buffersize {
+	for i := uint64(0); i < size; i += *cli.BufferSize {
+		if size-i <= *cli.BufferSize {
 			if err := clone(size-i, read, write); err != nil {
 				return err
 			}
 		} else {
-			if err := clone(*dd.buffersize, read, write); err != nil {
+			if err := clone(*cli.BufferSize, read, write); err != nil {
 				return err
 			}
 		}

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -8,7 +10,8 @@ import (
 )
 
 func attach(src string) (string, string, error) {
-	out, err := exec.Command("hdiutil", "attach", src).Output()
+	mntpoint := genname(6)
+	out, err := exec.Command("hdiutil", "attach", "-mountpoint", mntpoint, src).Output()
 	if err != nil {
 		return "", "", err
 	}
@@ -29,13 +32,22 @@ func getsize(path string) uint64 {
 
 	for _, str := range info {
 		text := fixspace(str)
-		if strings.HasPrefix(text, "Disk") {
+		if strings.HasPrefix(text, "Disk Size:") {
 			size = getnum(text)
 			break
 		}
 	}
 
 	return size
+}
+
+func genname(length int) string {
+	randomBytes := make([]byte, 32)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
+	}
+	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }
 
 func fixspace(data string) string {
@@ -58,6 +70,6 @@ func getnum(data string) uint64 {
 	return uint64(size)
 }
 
-func pyIdentify(poiTrain, poiTest string) error {
-	return exec.Command("./libpy/face.py", poiTrain, poiTest).Run()
+func pyIdentify(poitest, poitrain, modeltype string) error {
+	return exec.Command("python3", "./libpy/face.py", poitest, poitrain, modeltype).Run()
 }

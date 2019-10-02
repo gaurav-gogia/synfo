@@ -8,53 +8,64 @@ import (
 	"strings"
 )
 
-type commandline struct{}
+// CommandLine is the data structure for CLI
+type CommandLine struct {
+	SRC        *string
+	DST        *string
+	PoI        *string
+	BufferSize *uint64
+	CmdType    string
+	EviDir     string
+	ModelType  *string
+}
 
-func (cli *commandline) usage() {
+func (cli *CommandLine) usage() {
 	fmt.Println("Usage: ")
-	fmt.Println("  auto -src <src_device_file> -dst <dst_file_name> -poi <poi_image_dir> [-buff <buffer_size>] | performs auto forensic image analysis for face verification")
-	fmt.Println("  extract -src <src_device_file> -dst <dst_file_name> [-buff <buffer_size>] | images device & extracts specified type of files")
+	fmt.Println("  auto -src <src_device_file> -dst <dst_file_name> -poi <poi_image_dir> [-buff <buffer_size>] [-model <hog | cnn>] | performs auto forensic image analysis for face verification")
+	fmt.Println("  ext -src <src_device_file> -dst <dst_file_name> [-buff <buffer_size>] | images device & extracts specified type of files")
 	fmt.Println("  using a fully qualified dir path is recommended for <src_device_file>")
 	fmt.Println("  default buffer size is ", defaultBuffer, " bytes")
 
 	fmt.Printf("\n  ---------- EXAMPLE 1 ----------\n")
-	fmt.Printf("  ./synfo auto --src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
+	fmt.Printf("  ./synfo auto -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
 	fmt.Println("  ---------- EXAMPLE 2 ----------")
-	fmt.Printf("  ./synfo auto --src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000\n\n")
+	fmt.Printf("  ./synfo auto -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000 -model cnn\n\n")
 
 	fmt.Println("  ---------- EXAMPLE 3 ----------")
-	fmt.Printf("  ./synfo extract --src /dev/somefile -dst ./somefolder/evi.iso\n\n")
+	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
 	fmt.Println("  ---------- EXAMPLE 4 ----------")
-	fmt.Printf("  ./synfo extract --src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
+	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
 }
 
-func (cli *commandline) validate() {
+func (cli *CommandLine) validate() {
 	if len(os.Args) < 2 {
 		cli.usage()
 		os.Exit(0)
 	}
 }
 
-func cui() opts {
-	var dd opts
-	var cli commandline
+// NewCli function creates new instances of CLI
+func NewCli() CommandLine {
+	var cli CommandLine
+	var err error
 
 	cli.validate()
 
 	autocmd := flag.NewFlagSet("auto", flag.ExitOnError)
-	extcmd := flag.NewFlagSet("extract", flag.ExitOnError)
+	extcmd := flag.NewFlagSet("ext", flag.ExitOnError)
 
 	switch os.Args[1] {
 	case "auto":
-		dd.src = autocmd.String("src", "", "Source root directory from where you wish to start scanning")
-		dd.dst = autocmd.String("dst", "", "Destination directory where you wish to save output file")
-		dd.poi = autocmd.String("poi", "", "Image directory of suspects' face")
-		dd.buffersize = autocmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
+		cli.SRC = autocmd.String("src", "", "Source root directory from where you wish to start scanning")
+		cli.DST = autocmd.String("dst", "", "Destination directory where you wish to save output file")
+		cli.PoI = autocmd.String("poi", "", "Image directory of suspects' face")
+		cli.BufferSize = autocmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
+		cli.ModelType = autocmd.String("model", defaultModel, "ML/DL Model to be used")
 		handle(autocmd.Parse(os.Args[2:]))
-	case "extract":
-		dd.src = extcmd.String("src", "", "Source root directory from where you wish to start scanning")
-		dd.dst = extcmd.String("dst", "", "Destination directory where you wish to save output file")
-		dd.buffersize = extcmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
+	case "ext":
+		cli.SRC = extcmd.String("src", "", "Source root directory from where you wish to start scanning")
+		cli.DST = extcmd.String("dst", "", "Destination directory where you wish to save output file")
+		cli.BufferSize = extcmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
 		handle(extcmd.Parse(os.Args[2:]))
 	default:
 		cli.usage()
@@ -62,46 +73,62 @@ func cui() opts {
 	}
 
 	if autocmd.Parsed() {
-		if *dd.src == "" || *dd.dst == "" || *dd.poi == "" {
+		if *cli.SRC == "" || *cli.DST == "" || *cli.PoI == "" {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.src, "/") || !(strings.HasPrefix(*dd.src, "/dev/")) {
+		} else if strings.HasSuffix(*cli.SRC, "/") || !(strings.HasPrefix(*cli.SRC, "/dev/")) {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.dst, "/") {
-			*dd.dst = "./evidence/evi.iso"
-		} else if !(strings.HasSuffix(*dd.poi, "/")) {
-			*dd.poi += "/"
-		} else if err := sanityCheck(*dd.dst); err != nil {
+		} else if strings.HasSuffix(*cli.DST, "/") {
+			*cli.DST = *cli.DST + "evi.iso"
+		} else if !(strings.HasSuffix(*cli.PoI, "/")) {
+			*cli.PoI += "/"
+		} else if err := sanityCheck(*cli.DST); err != nil {
+			cli.usage()
+			os.Exit(0)
+		} else if *cli.ModelType != "cnn" || *cli.ModelType != "hog" {
 			cli.usage()
 			os.Exit(0)
 		}
-		dd.cmdType = AUTOCMD
+		cli.CmdType = AUTOCMD
 	}
 
 	if extcmd.Parsed() {
-		if *dd.src == "" || *dd.dst == "" {
+		if *cli.SRC == "" || *cli.DST == "" {
 			cli.usage()
 			os.Exit(0)
-		} else if strings.HasSuffix(*dd.src, "/") || strings.HasSuffix(*dd.dst, "/") {
+		} else if strings.HasSuffix(*cli.SRC, "/") || !(strings.HasPrefix(*cli.SRC, "/dev/")) {
 			cli.usage()
 			os.Exit(0)
-		} else if err := sanityCheck(*dd.dst); err != nil {
+		} else if strings.HasSuffix(*cli.DST, "/") {
+			*cli.DST = *cli.DST + "evi.iso"
+		} else if err := sanityCheck(*cli.DST); err != nil {
 			cli.usage()
 			os.Exit(0)
 		}
-		dd.cmdType = EXTCMD
+		cli.CmdType = EXTCMD
 	}
 
-	dd.evidir, _ = filepath.Split(*dd.dst)
+	*cli.SRC, err = filepath.Abs(*cli.SRC)
+	if err != nil {
+		fmt.Println("Could NOT convert into Absolute path")
+		os.Exit(0)
+	}
+	*cli.DST, err = filepath.Abs(*cli.DST)
+	if err != nil {
+		fmt.Println("Could NOT convert into Absolute path")
+		os.Exit(0)
+	}
 
-	dir, name := filepath.Split(*dd.dst)
+	cli.EviDir, _ = filepath.Split(*cli.DST)
+
+	dir, name := filepath.Split(*cli.DST)
 	name = strings.TrimSuffix(name, filepath.Ext(name))
-	*dd.dst = dir + name + ".iso"
+	*cli.DST = dir + name + ".iso"
 
-	*dd.buffersize = fixbuffsize(*dd.buffersize)
+	*cli.BufferSize = fixbuffsize(*cli.BufferSize)
 
-	return dd
+	return cli
 }
 
 func fixbuffsize(buffsize uint64) uint64 {

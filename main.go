@@ -9,17 +9,9 @@ import (
 	"./lib"
 )
 
-type opts struct {
-	src        *string
-	dst        *string
-	poi        *string
-	buffersize *uint64
-	cmdType    string
-	evidir     string
-}
-
 const (
 	defaultBuffer = 10 * 1024
+	defaultModel  = "hog"
 	mountinfoPath = "/proc/self/mountinfo"
 	partfile      = ".part"
 )
@@ -36,33 +28,45 @@ func init() {
 
 func main() {
 	in := 1
-	dd := cui()
-	if dd.cmdType == EXTCMD {
+	cli := NewCli()
+	if cli.CmdType == EXTCMD {
 		in = menu()
 	}
 
+	fmt.Println("BufferSize: ", *cli.BufferSize)
 	fmt.Println("Imaging ....")
 	start := time.Now()
-	handle(dd.run())
+	if err := Run(cli); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
 	fmt.Println("\nCalculating Hashes ....")
-	integritycheck(*dd.dst)
+	integritycheck(*cli.DST)
 
-	_, err := getdata(*dd.dst, dd.evidir, in)
-	handle(err)
+	handle(getdata(*cli.DST, cli.EviDir, in))
 
-	if in == 1 {
-		fmt.Println("Running face recognition ....")
-		pyIdentify(*dd.poi, dd.evidir+"images/")
+	if cli.CmdType == AUTOCMD {
+		fmt.Println("\n\nRunning face recognition ....")
+		start := time.Now()
+		if err := pyIdentify(cli.EviDir+"images/", *cli.PoI, *cli.ModelType); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Printf("\nPoI Identification Time: %v\n", time.Since(start))
 	}
+
+	fmt.Println("\nDone!")
 }
 
-func getdata(dst, copydst string, in int) (int64, error) {
+func getdata(dst, copydst string, in int) error {
 	mntloc, copysrc, err := attach(dst)
-	count := lib.Extract(copysrc, copydst, in)
-	err = detach(mntloc)
-	return count, err
+	if err != nil {
+		return err
+	}
+	lib.Extract(copysrc, copydst, in)
+	return detach(mntloc)
 }
 
 func integritycheck(dst string) {
