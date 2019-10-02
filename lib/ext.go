@@ -1,12 +1,14 @@
 package lib
 
 import (
+	"archive/zip"
 	"crypto/rand"
 	"encoding/base32"
 	"errors"
 	"fmt"
 	"image"
 	"image/png"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -38,6 +40,9 @@ func Extract(root, dst string, in int) {
 				if err := getimgfrompdf(&buf, &count, dst+"images/", filepath); err != nil {
 					fmt.Println(err)
 				}
+				if err := getimgfrompop(&buf, &count, dst+"images/", filepath); err != nil {
+					fmt.Println(err)
+				}
 				if err := carvefile(&count, dst+"images/", filepath); err != nil {
 					fmt.Println(err)
 				}
@@ -63,9 +68,7 @@ func Extract(root, dst string, in int) {
 		return nil
 	})
 
-	if count == 0 {
-		fmt.Printf("\nFile not found . - .")
-	}
+	fmt.Println("\nTotal files found: ", count)
 }
 
 func getimgfrompdf(buf *[]byte, count *int64, dst, infile string) error {
@@ -118,10 +121,10 @@ func extractImagesOnPage(page *pdf.PdfPage, dst, infile string, count *int64) er
 		return err
 	}
 
-	return extractImagesInContentStream(contents, page.Resources, dst, infile, count)
+	return extImgsInContStream(contents, page.Resources, dst, infile, count)
 }
 
-func extractImagesInContentStream(contents string, resources *pdf.PdfPageResources, dst, infile string, count *int64) error {
+func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dst, infile string, count *int64) error {
 	cstreamParser := pdfcontent.NewContentStreamParser(contents)
 	operations, err := cstreamParser.Parse()
 	if err != nil {
@@ -221,7 +224,7 @@ func extractImagesInContentStream(contents string, resources *pdf.PdfPageResourc
 				}
 
 				// Process the content stream in the Form object too:
-				if err := extractImagesInContentStream(string(formContent), formResources, dst, infile, count); err != nil {
+				if err := extImgsInContStream(string(formContent), formResources, dst, infile, count); err != nil {
 					return err
 				}
 			}
@@ -246,7 +249,7 @@ func saveimage(dst, infile string, img image.Image, count *int64) error {
 	}
 
 	*count++
-	fmt.Printf("\rImage File Found: %s, Count: %v", name, *count)
+	fmt.Printf("\rImage File Found: %s", name)
 	return nil
 }
 
@@ -257,7 +260,7 @@ func copyimage(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsImage(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rImage File Found: %s, Count: %v", name, *count)
+		fmt.Printf("\rImage File Found: %s", name)
 	}
 
 	return err
@@ -270,7 +273,7 @@ func copyvideo(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsVideo(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rVideo File Found: %s, Count: %v", name, *count)
+		fmt.Printf("\rVideo File Found: %s", name)
 	}
 
 	return err
@@ -283,7 +286,7 @@ func copyaudio(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsAudio(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rAudio File Found: %s, Count: %v", name, *count)
+		fmt.Printf("\rAudio File Found: %s", name)
 	}
 
 	return err
@@ -296,7 +299,7 @@ func copyarchive(buf *[]byte, count *int64, dst, name string) error {
 	if filetype.IsArchive(*buf) {
 		*count++
 		err = ioutil.WriteFile(dst+name, *buf, 0644)
-		fmt.Printf("\rArchive File Found: %s, Count: %v", name, *count)
+		fmt.Printf("\rArchive File Found: %s", name)
 	}
 
 	return err
@@ -312,6 +315,18 @@ func ispdf(buf []byte) bool {
 	return len(buf) > 3 &&
 		buf[0] == 0x25 && buf[1] == 0x50 &&
 		buf[2] == 0x44 && buf[3] == 0x46
+}
+
+func isepub(buf []byte) bool {
+	return len(buf) > 57 &&
+		buf[0] == 0x50 && buf[1] == 0x4B && buf[2] == 0x3 && buf[3] == 0x4 &&
+		buf[30] == 0x6D && buf[31] == 0x69 && buf[32] == 0x6D && buf[33] == 0x65 &&
+		buf[34] == 0x74 && buf[35] == 0x79 && buf[36] == 0x70 && buf[37] == 0x65 &&
+		buf[38] == 0x61 && buf[39] == 0x70 && buf[40] == 0x70 && buf[41] == 0x6C &&
+		buf[42] == 0x69 && buf[43] == 0x63 && buf[44] == 0x61 && buf[45] == 0x74 &&
+		buf[46] == 0x69 && buf[47] == 0x6F && buf[48] == 0x6E && buf[49] == 0x2F &&
+		buf[50] == 0x65 && buf[51] == 0x70 && buf[52] == 0x75 && buf[53] == 0x62 &&
+		buf[54] == 0x2B && buf[55] == 0x7A && buf[56] == 0x69 && buf[57] == 0x70
 }
 
 func getimgname(length int) string {
@@ -578,4 +593,58 @@ func writecarved(dst, ext string, data *[]byte, count *int64) error {
 	_, fname := filepath.Split(name)
 	fmt.Printf("\rImage file found: %s, Count: %v", fname, *count)
 	return nil
+}
+
+func getimgfrompop(buf *[]byte, count *int64, dst, path string) error {
+	filetypedir(dst)
+
+	if ispopdoc(buf, filepath.Ext(path)) {
+		r, err := zip.OpenReader(path)
+		defer r.Close()
+		if err != nil {
+			return err
+		}
+
+		for _, f := range r.File {
+			if f.FileInfo().IsDir() {
+				continue
+			} else if isimgext(filepath.Ext(f.Name)) {
+				fpath := dst + "/" + filepath.Base(path) + "_" + getimgname(6) + "_" + filepath.Base(f.Name)
+
+				outFile, _ := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+				rc, _ := f.Open()
+				io.Copy(outFile, rc)
+
+				outFile.Close()
+				rc.Close()
+				*count++
+				fmt.Printf("\rImage file found: %s", filepath.Base(fpath))
+			}
+		}
+	}
+
+	return nil
+}
+
+func isimgext(ext string) bool {
+	validexts := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".gif":  true,
+		".bmp":  true,
+		".webp": true,
+		".svg":  true,
+	}
+	return validexts[ext]
+}
+
+func ispopdoc(buf *[]byte, ext string) bool {
+	validext := map[string]bool{
+		".odf":   true,
+		".odt":   true,
+		".odp":   true,
+		".pages": true,
+	}
+	return filetype.IsDocument(*buf) || isepub(*buf) || validext[ext]
 }

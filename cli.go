@@ -47,6 +47,7 @@ func (cli *CommandLine) validate() {
 // NewCli function creates new instances of CLI
 func NewCli() CommandLine {
 	var cli CommandLine
+	var err error
 
 	cli.validate()
 
@@ -106,6 +107,17 @@ func NewCli() CommandLine {
 			os.Exit(0)
 		}
 		cli.CmdType = EXTCMD
+	}
+
+	*cli.SRC, err = filepath.Abs(*cli.SRC)
+	if err != nil {
+		fmt.Println("Could NOT convert into Absolute path")
+		os.Exit(0)
+	}
+	*cli.DST, err = filepath.Abs(*cli.DST)
+	if err != nil {
+		fmt.Println("Could NOT convert into Absolute path")
+		os.Exit(0)
 	}
 
 	cli.EviDir, _ = filepath.Split(*cli.DST)
