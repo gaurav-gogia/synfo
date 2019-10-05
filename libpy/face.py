@@ -1,8 +1,8 @@
-import sys
-import time
-import glob
-import datetime
 import face_recognition
+import datetime
+import glob
+import time
+import sys
 
 
 def match(test: str, train_file_names: list, outfile, model_type: str):
