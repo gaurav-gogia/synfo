@@ -591,7 +591,7 @@ func writecarved(dst, ext string, data *[]byte, count *int64) error {
 	}
 	*count++
 	_, fname := filepath.Split(name)
-	fmt.Printf("\rImage file found: %s, Count: %v", fname, *count)
+	fmt.Printf("\rImage file found: %s", fname)
 	return nil
 }
 
