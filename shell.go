@@ -73,3 +73,7 @@ func getnum(data string) uint64 {
 func pyIdentify(poitest, poitrain, modeltype string) error {
 	return exec.Command("python3", "./libpy/face.py", poitest, poitrain, modeltype).Run()
 }
+
+func pyDetect(wepimages string) error {
+	return exec.Command("python3", "./libpy/weapon.py", wepimages).Run()
+}

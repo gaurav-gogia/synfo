@@ -86,10 +86,17 @@ func NewCli() CommandLine {
 		} else if err := sanityCheck(*cli.DST); err != nil {
 			cli.usage()
 			os.Exit(0)
-		} else if *cli.ModelType != "cnn" || *cli.ModelType != "hog" {
+		}
+
+		switch *cli.ModelType {
+		case "cnn":
+			fallthrough
+		case "hog":
+		default:
 			cli.usage()
 			os.Exit(0)
 		}
+
 		cli.CmdType = AUTOCMD
 	}
 

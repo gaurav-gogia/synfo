@@ -42,14 +42,18 @@ func main() {
 	}
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
+	start = time.Now()
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*cli.DST)
+	fmt.Printf("Hash Calculation Time: %v\n", time.Since(start))
 
+	start = time.Now()
 	handle(getdata(*cli.DST, cli.EviDir, in))
+	fmt.Printf("\nData Extraction Time: %v\n", time.Since(start))
 
 	if cli.CmdType == AUTOCMD {
 		fmt.Println("\n\nRunning face recognition ....")
-		start := time.Now()
+		start = time.Now()
 		if err := pyIdentify(cli.EviDir+"images/", *cli.PoI, *cli.ModelType); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
