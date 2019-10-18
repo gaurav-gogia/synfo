@@ -42,8 +42,10 @@ func main() {
 	}
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
+	start = time.Now()
 	fmt.Println("\nCalculating Hashes ....")
 	integritycheck(*cli.DST)
+	fmt.Printf("Hash Calculation Time: %v\n", time.Since(start))
 
 	start = time.Now()
 	handle(getdata(*cli.DST, cli.EviDir, in))

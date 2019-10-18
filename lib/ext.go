@@ -40,10 +40,10 @@ func Extract(root, dst string, in int) {
 				if err := getimgfrompdf(&buf, &count, dst+"images/", filepath); err != nil {
 					fmt.Println(err)
 				}
-				if err := getimgfrompop(&buf, &count, dst+"images/", filepath); err != nil {
+				if err := carvefile(&buf, &count, dst+"images/", filepath); err != nil {
 					fmt.Println(err)
 				}
-				if err := carvefile(&count, dst+"images/", filepath); err != nil {
+				if err := getimgfrompop(&buf, &count, dst+"images/", filepath); err != nil {
 					fmt.Println(err)
 				}
 			case VIDEO:
@@ -68,7 +68,7 @@ func Extract(root, dst string, in int) {
 		return nil
 	})
 
-	fmt.Println("\nTotal files found: ", count)
+	fmt.Println("\n\nTotal files found: ", count)
 }
 
 func getimgfrompdf(buf *[]byte, count *int64, dst, infile string) error {
@@ -338,7 +338,11 @@ func getimgname(length int) string {
 	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }
 
-func carvefile(count *int64, dst, path string) error {
+func carvefile(buf *[]byte, count *int64, dst, path string) error {
+	if ispopdoc(buf, filepath.Ext(path)) || ispdf(*buf) || filetype.IsImage(*buf) {
+		return nil
+	}
+
 	filetypedir(dst)
 	_, name := filepath.Split(path)
 	fmt.Println("\nFile carver running on: ", name)
@@ -600,10 +604,10 @@ func getimgfrompop(buf *[]byte, count *int64, dst, path string) error {
 
 	if ispopdoc(buf, filepath.Ext(path)) {
 		r, err := zip.OpenReader(path)
-		defer r.Close()
 		if err != nil {
 			return err
 		}
+		defer r.Close()
 
 		for _, f := range r.File {
 			if f.FileInfo().IsDir() {
