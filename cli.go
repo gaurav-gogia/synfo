@@ -21,7 +21,7 @@ type CommandLine struct {
 
 func (cli *CommandLine) usage() {
 	fmt.Println("Usage: ")
-	fmt.Println("  auto -src <src_device_file> -dst <dst_file_name> -poi <poi_image_dir> [-buff <buffer_size>] [-model <hog | cnn>] | performs auto forensic image analysis for face verification")
+	fmt.Println("  auto -src <src_device_file> -dst <dst_file_name> -poi <poi_image_dir> [-buff <buffer_size>] [-model {hog | cnn}] | performs auto forensic image analysis for face verification")
 	fmt.Println("  ext -src <src_device_file> -dst <dst_file_name> [-buff <buffer_size>] | images device & extracts specified type of files")
 	fmt.Println("  using a fully qualified dir path is recommended for <src_device_file>")
 	fmt.Println("  default buffer size is ", defaultBuffer, " bytes")
