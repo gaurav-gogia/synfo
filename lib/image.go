@@ -21,6 +21,11 @@ func Run(cli CommandLine) error {
 		return err
 	}
 
+	if !confirm(*cli.DST) {
+		fmt.Println("User skipped disk imaging....")
+		return nil
+	}
+
 	destination, err := create(*cli.DST)
 	if err != nil {
 		return err
@@ -132,4 +137,20 @@ func create(dst string) (*os.File, error) {
 		return os.Stdout, nil
 	}
 	return os.Create(dst)
+}
+
+func confirm(dst string) bool {
+	var ans string
+	if _, err := os.Stat(dst); os.IsNotExist(err) {
+		return true
+	}
+
+	fmt.Println("Disk Image already exists. Continue? [Y]")
+	fmt.Scanln(&ans)
+
+	if ans == "y" || ans == "Y" {
+		return true
+	}
+
+	return false
 }
