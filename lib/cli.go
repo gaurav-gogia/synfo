@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"flag"
@@ -45,7 +45,7 @@ func (cli *CommandLine) validate() {
 }
 
 // NewCli function creates new instances of CLI
-func NewCli() CommandLine {
+func NewCli() (CommandLine, error) {
 	var cli CommandLine
 	var err error
 
@@ -61,12 +61,12 @@ func NewCli() CommandLine {
 		cli.PoI = autocmd.String("poi", "", "Image directory of suspects' face")
 		cli.BufferSize = autocmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
 		cli.ModelType = autocmd.String("model", defaultModel, "ML/DL Model to be used")
-		handle(autocmd.Parse(os.Args[2:]))
+		return cli, autocmd.Parse(os.Args[2:])
 	case "ext":
 		cli.SRC = extcmd.String("src", "", "Source root directory from where you wish to start scanning")
 		cli.DST = extcmd.String("dst", "", "Destination directory where you wish to save output file")
 		cli.BufferSize = extcmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
-		handle(extcmd.Parse(os.Args[2:]))
+		return cli, extcmd.Parse(os.Args[2:])
 	default:
 		cli.usage()
 		os.Exit(0)
@@ -135,7 +135,7 @@ func NewCli() CommandLine {
 
 	*cli.BufferSize = fixbuffsize(*cli.BufferSize)
 
-	return cli
+	return cli, err
 }
 
 func fixbuffsize(buffsize uint64) uint64 {

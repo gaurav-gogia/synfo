@@ -9,37 +9,22 @@ import (
 	"./lib"
 )
 
-const (
-	defaultBuffer = 10 * 1024
-	defaultModel  = "hog"
-	mountinfoPath = "/proc/self/mountinfo"
-	partfile      = ".part"
-)
-
-// Global Constants
-const (
-	AUTOCMD = "AUTO"
-	EXTCMD  = "EXTRACT"
-)
-
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
 func main() {
 	in := 1
-	cli := NewCli()
-	if cli.CmdType == EXTCMD {
+	cli, err := lib.NewCli()
+	handle(err)
+	if cli.CmdType == lib.EXTCMD {
 		in = menu()
 	}
 
 	fmt.Println("BufferSize: ", *cli.BufferSize)
 	fmt.Println("Imaging ....")
 	start := time.Now()
-	if err := Run(cli); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	handle(lib.Run(cli))
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
 
 	start = time.Now()
@@ -51,10 +36,10 @@ func main() {
 	handle(getdata(*cli.DST, cli.EviDir, in))
 	fmt.Printf("\nData Extraction Time: %v\n", time.Since(start))
 
-	if cli.CmdType == AUTOCMD {
+	if cli.CmdType == lib.AUTOCMD {
 		fmt.Println("\n\nRunning face recognition ....")
 		start = time.Now()
-		if err := pyIdentify(cli.EviDir+"images/", *cli.PoI, *cli.ModelType); err != nil {
+		if err := lib.PyIdentify(cli.EviDir+"images/", *cli.PoI, *cli.ModelType); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -65,16 +50,16 @@ func main() {
 }
 
 func getdata(dst, copydst string, in int) error {
-	mntloc, copysrc, err := attach(dst)
+	mntloc, copysrc, err := lib.Attach(dst)
 	if err != nil {
 		return err
 	}
 	lib.Extract(copysrc, copydst, in)
-	return detach(mntloc)
+	return lib.Detach(mntloc)
 }
 
 func integritycheck(dst string) {
-	md, sha, err := gethashes(dst)
+	md, sha, err := lib.GetHashes(dst)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to gain hashes: %v", err))
 		os.Exit(1)
@@ -86,6 +71,7 @@ func integritycheck(dst string) {
 func handle(err error) {
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 

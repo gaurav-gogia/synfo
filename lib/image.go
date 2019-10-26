@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"bufio"
@@ -105,7 +105,7 @@ func sanityCheck(dst string) error {
 	return scanner.Err()
 }
 
-func gethashes(imgpath string) (string, string, error) {
+func GetHashes(imgpath string) (string, string, error) {
 	file, err := os.Open(imgpath)
 	if err != nil {
 		return "", "", err

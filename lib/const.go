@@ -7,3 +7,15 @@ const (
 	AUDIO
 	ARCHIVE
 )
+
+const (
+	defaultBuffer = 10 * 1024
+	defaultModel  = "hog"
+	mountinfoPath = "/proc/self/mountinfo"
+	partfile      = ".part"
+)
+
+const (
+	AUTOCMD = "AUTO"
+	EXTCMD  = "EXTRACT"
+)

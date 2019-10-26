@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"crypto/rand"
@@ -16,7 +16,7 @@ const (
 	mac   = "darwin"
 )
 
-func attach(src string) (string, string, error) {
+func Attach(src string) (string, string, error) {
 	if runtime.GOOS == mac {
 		mntpoint := genname(6)
 		out, err := exec.Command("hdiutil", "attach", "-mountpoint", mntpoint, src).Output()
@@ -36,7 +36,7 @@ func attach(src string) (string, string, error) {
 	return "", "", errors.New("unknown runtime")
 }
 
-func detach(name string) error {
+func Detach(name string) error {
 	var err error
 	if runtime.GOOS == mac {
 		_, err = exec.Command("hdiutil", "detach", name).Output()
@@ -104,10 +104,10 @@ func getnum(data string) uint64 {
 	return uint64(size)
 }
 
-func pyIdentify(poitest, poitrain, modeltype string) error {
+func PyIdentify(poitest, poitrain, modeltype string) error {
 	return exec.Command("python3", "./libpy/face.py", poitest, poitrain, modeltype).Run()
 }
 
-func pyDetect(wepimages string) error {
+func PyDetect(wepimages string) error {
 	return exec.Command("python3", "./libpy/weapon.py", wepimages).Run()
 }
