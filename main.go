@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"time"
 
-	"./lib"
+	"synfo/lib"
 )
 
 func init() {
