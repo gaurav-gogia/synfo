@@ -3,42 +3,76 @@ package main
 import (
 	"crypto/rand"
 	"encoding/base32"
+	"errors"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 )
 
+const (
+	linux = "linux"
+	mac   = "darwin"
+)
+
 func attach(src string) (string, string, error) {
-	mntpoint := genname(6)
-	out, err := exec.Command("hdiutil", "attach", "-mountpoint", mntpoint, src).Output()
-	if err != nil {
-		return "", "", err
+	if runtime.GOOS == mac {
+		mntpoint := genname(6)
+		out, err := exec.Command("hdiutil", "attach", "-mountpoint", mntpoint, src).Output()
+		if err != nil {
+			return "", "", err
+		}
+		mntloc := strings.Fields(string(out))[0]
+		copysrc := strings.Fields(string(out))[1]
+		return mntloc, copysrc, nil
+	} else if runtime.GOOS == linux {
+		/*
+			TODO:
+				Mount disk image as loop device
+		*/
 	}
-	mntloc := strings.Fields(string(out))[0]
-	copysrc := strings.Fields(string(out))[1]
-	return mntloc, copysrc, nil
+
+	return "", "", errors.New("unknown runtime")
 }
 
 func detach(name string) error {
-	_, err := exec.Command("hdiutil", "detach", name).Output()
-	return err
+	var err error
+	if runtime.GOOS == mac {
+		_, err = exec.Command("hdiutil", "detach", name).Output()
+		return err
+	} else if runtime.GOOS == linux {
+		/*
+			TODO:
+				Unmount the loop device
+		*/
+	}
+	return errors.New("unknown runtime")
 }
 
-func getsize(path string) uint64 {
-	data, _ := exec.Command("diskutil", "info", path).Output()
-	info := strings.Split(string(data), "\n")
+func getsize(path string) (uint64, error) {
 	var size uint64
 
-	for _, str := range info {
-		text := fixspace(str)
-		if strings.HasPrefix(text, "Disk Size:") {
-			size = getnum(text)
-			break
+	if runtime.GOOS == mac {
+		data, _ := exec.Command("diskutil", "info", path).Output()
+		info := strings.Split(string(data), "\n")
+
+		for _, str := range info {
+			text := fixspace(str)
+			if strings.HasPrefix(text, "Disk Size:") {
+				size = getnum(text)
+				break
+			}
 		}
+		return size, nil
+	} else if runtime.GOOS == linux {
+		/*
+			TODO:
+				Get size of special block device file
+		*/
 	}
 
-	return size
+	return 0, errors.New("unknown runtime")
 }
 
 func genname(length int) string {

@@ -16,7 +16,10 @@ import (
 
 // Run function is the entrypoint for disk imaging, it runs disk imaging
 func Run(cli CommandLine) error {
-	size := getsize(*cli.SRC)
+	size, err := getsize(*cli.SRC)
+	if err != nil {
+		return err
+	}
 
 	destination, err := create(*cli.DST)
 	if err != nil {
