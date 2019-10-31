@@ -4,11 +4,13 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"errors"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -16,6 +18,7 @@ const (
 	mac   = "darwin"
 )
 
+// Attach function mounts the iso file as a special block device
 func Attach(src string) (string, string, error) {
 	if runtime.GOOS == mac {
 		mntpoint := genname(6)
@@ -36,6 +39,7 @@ func Attach(src string) (string, string, error) {
 	return "", "", errors.New("unknown runtime")
 }
 
+// Detach function unmounts the attached iso file
 func Detach(name string) error {
 	var err error
 	if runtime.GOOS == mac {
@@ -104,10 +108,30 @@ func getnum(data string) uint64 {
 	return uint64(size)
 }
 
-func PyIdentify(poitest, poitrain, modeltype string) error {
-	return exec.Command("python3", "./libpy/face.py", poitest, poitrain, modeltype).Run()
+// PyApd function runs Automated PoI Detection
+// It takes following arguments:
+//		poitest - directory of extracted images
+//		poitrain - directory of known images with faces
+//		modeltype - an option for using hog or cnn model for apd
+func PyApd(poitest, poitrain, modeltype string) error {
+	start := time.Now()
+
+	fmt.Println("\n\nRunning PoI Identification  ....")
+	err := exec.Command("python3", "./libpy/face.py", poitest, poitrain, modeltype).Run()
+
+	fmt.Printf("\nPoI Identification Time: %v\n", time.Since(start))
+	return err
 }
 
-func PyDetect(wepimages string) error {
-	return exec.Command("python3", "./libpy/weapon.py", wepimages).Run()
+// PyAwd function runs Automated Weapon Detection on images
+// It takes following arguments:
+//		wepimages - directory of extrcated images
+func PyAwd(wepimages string) error {
+	start := time.Now()
+
+	fmt.Println("\n\nRunning Weapon Detection ....")
+	err := exec.Command("python3", "./libpy/weapon.py", wepimages).Run()
+
+	fmt.Printf("\nWeapon Detection Time: %v\n", time.Since(start))
+	return err
 }
