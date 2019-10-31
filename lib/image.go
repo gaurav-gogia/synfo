@@ -10,40 +10,42 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"golang.org/x/sys/unix"
 )
 
 // Run function is the entrypoint for disk imaging, it runs disk imaging
 func Run(cli CommandLine) error {
+	start := time.Now()
+
+	if !confirm(*cli.DST) {
+		return nil
+	}
+
+	fmt.Println("\nImaging ....")
+	fmt.Println("Using BufferSize: ", *cli.BufferSize)
+
 	size, err := getsize(*cli.SRC)
 	if err != nil {
 		return err
 	}
 
-	if !confirm(*cli.DST) {
-		fmt.Println("User skipped disk imaging....")
-		return nil
-	}
-
-	destination, err := create(*cli.DST)
+	read, write, err := setup(*cli.SRC, *cli.DST)
 	if err != nil {
 		return err
 	}
-	destination.Close()
-
-	read, err := unix.Open(*cli.SRC, unix.O_RDONLY, 0777)
 	defer unix.Close(read)
-	if err != nil {
-		return err
-	}
-	write, err := unix.Open(*cli.DST, unix.O_WRONLY, 0777)
 	defer unix.Close(write)
-	if err != nil {
-		return err
-	}
 
-	for i := uint64(0); i < size; i += *cli.BufferSize {
+	for i := uint64(0); i <= size; i += *cli.BufferSize {
+		percent := (float64(i) / float64(size)) * 100
+		fmt.Printf("\rProgress .... %f%%", percent)
+
+		if i == size {
+			break
+		}
+
 		if size-i <= *cli.BufferSize {
 			if err := clone(size-i, read, write); err != nil {
 				return err
@@ -53,11 +55,33 @@ func Run(cli CommandLine) error {
 				return err
 			}
 		}
-		fmt.Printf("\rProgress .... %d of %d done", i, size)
 	}
 	fmt.Println()
 
+	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
+	integritycheck(*cli.DST)
+
 	return nil
+}
+
+func setup(src, dst string) (int, int, error) {
+	destination, err := create(dst)
+	if err != nil {
+		return 0, 0, err
+	}
+	destination.Close()
+
+	read, err := unix.Open(src, unix.O_RDONLY, 0777)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	write, err := unix.Open(dst, unix.O_WRONLY, 0777)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return read, write, nil
 }
 
 func clone(buffersize uint64, read, write int) error {
@@ -110,7 +134,22 @@ func sanityCheck(dst string) error {
 	return scanner.Err()
 }
 
-func GetHashes(imgpath string) (string, string, error) {
+func integritycheck(dst string) {
+	start := time.Now()
+	fmt.Println("\nCalculating Hashes ....")
+
+	md, sha, err := gethashes(dst)
+	if err != nil {
+		fmt.Println(fmt.Errorf("failed to gain hashes: %v", err))
+		os.Exit(1)
+	}
+	fmt.Println("MD5: ", md)
+	fmt.Println("SHA256: ", sha)
+
+	fmt.Printf("Hash Calculation Time: %v\n", time.Since(start))
+}
+
+func gethashes(imgpath string) (string, string, error) {
 	file, err := os.Open(imgpath)
 	if err != nil {
 		return "", "", err
@@ -145,12 +184,13 @@ func confirm(dst string) bool {
 		return true
 	}
 
-	fmt.Println("Disk Image already exists. Continue? [Y]")
+	fmt.Printf("Disk Image already exists. Continue [y/n]? -> ")
 	fmt.Scanln(&ans)
 
 	if ans == "y" || ans == "Y" {
 		return true
 	}
 
+	fmt.Println("User skipped disk imaging....")
 	return false
 }
