@@ -22,7 +22,7 @@ import (
 
 // Extract function takes in root dir, destination and choice.
 // Walks through entire file structure to copy files based on their magic numbers
-func Extract(root, dst string, in int) {
+func Extract(root, dst string, ft string) {
 	var count int64
 	filepath.Walk(root, func(filepath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -32,7 +32,7 @@ func Extract(root, dst string, in int) {
 
 		if !info.IsDir() {
 			buf, err := ioutil.ReadFile(filepath)
-			switch in {
+			switch ft {
 			case IMAGE:
 				if err := copyimage(&buf, &count, dst+"images/", info.Name()); err != nil {
 					fmt.Println(err)

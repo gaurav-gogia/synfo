@@ -18,6 +18,7 @@ type CommandLine struct {
 	CmdType    string
 	EviDir     string
 	ModelType  *string
+	FileType   *string
 }
 
 func (cli *CommandLine) usage() {
@@ -45,22 +46,28 @@ func (cli *CommandLine) examples() {
 	fmt.Println("  ---------- EXAMPLE 1 ----------")
 	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
 	fmt.Println("  ---------- EXAMPLE 2 ----------")
-	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
+	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -bs 50000000\n\n")
+	fmt.Println("  ---------- EXAMPLE 3 ----------")
+	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -ft audio\n\n")
 
-	fmt.Printf("\n  ---------- EXAMPLE 3 ----------\n")
+	fmt.Printf("\n  ---------- EXAMPLE 4 ----------\n")
 	fmt.Printf("  ./synfo apd -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
-	fmt.Println("  ---------- EXAMPLE 4 ----------")
-	fmt.Printf("  ./synfo apd -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000 -model cnn\n\n")
-
 	fmt.Println("  ---------- EXAMPLE 5 ----------")
-	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
+	fmt.Printf("  ./synfo apd -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -bs 50000000 -model cnn\n\n")
+
 	fmt.Println("  ---------- EXAMPLE 6 ----------")
-	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
+	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
+	fmt.Println("  ---------- EXAMPLE 7 ----------")
+	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso -bs 50000000\n\n")
 	os.Exit(0)
 }
 
 func (cli *CommandLine) extusage() {
 	basicusage(EXTCMD, extcmduse)
+
+	fmt.Printf("\n\n -ft [default: %s]", defaultFt)
+	fmt.Printf("\n\t%s", ftflaghelp)
+
 	os.Exit(0)
 }
 func (cli *CommandLine) apdusage() {
@@ -126,6 +133,7 @@ func NewCli() (CommandLine, error) {
 	case EXTCMD:
 		cli.SRC = extcmd.String("src", "", srcflaghelp)
 		cli.DST = extcmd.String("dst", "", dstflaghelp)
+		cli.FileType = extcmd.String("ft", defaultFt, ftflaghelp)
 		cli.BufferSize = extcmd.Uint64("bs", defaultBuffer, bsflaghelp)
 		if err := extcmd.Parse(os.Args[2:]); err != nil {
 			return cli, err
@@ -189,6 +197,19 @@ func (cli *CommandLine) parseExt() {
 	} else if err := sanityCheck(*cli.DST); err != nil {
 		cli.extusage()
 	}
+
+	switch *cli.FileType {
+	case IMAGE:
+		fallthrough
+	case AUDIO:
+		fallthrough
+	case VIDEO:
+		fallthrough
+	case ARCHIVE:
+	default:
+		cli.extusage()
+	}
+
 	cli.CmdType = EXTCMD
 }
 
@@ -217,6 +238,7 @@ func (cli *CommandLine) parseApd() {
 		cli.apdusage()
 	}
 
+	*cli.FileType = defaultFt
 	cli.CmdType = APDCMD
 }
 
@@ -234,6 +256,8 @@ func (cli *CommandLine) parseAwd() {
 	} else if err := sanityCheck(*cli.DST); err != nil {
 		cli.awdusage()
 	}
+
+	*cli.FileType = defaultFt
 	cli.CmdType = AWDCMD
 }
 
