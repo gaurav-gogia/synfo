@@ -6,20 +6,7 @@ import (
 	"runtime"
 	"time"
 
-	"./lib"
-)
-
-const (
-	defaultBuffer = 10 * 1024
-	defaultModel  = "hog"
-	mountinfoPath = "/proc/self/mountinfo"
-	partfile      = ".part"
-)
-
-// Global Constants
-const (
-	AUTOCMD = "AUTO"
-	EXTCMD  = "EXTRACT"
+	"synfo/lib"
 )
 
 func init() {
@@ -28,64 +15,45 @@ func init() {
 
 func main() {
 	in := 1
-	cli := NewCli()
-	if cli.CmdType == EXTCMD {
+
+	cli, err := lib.NewCli()
+	handle(err)
+
+	handle(lib.Run(cli))
+	if cli.CmdType == lib.EXTCMD {
 		in = menu()
 	}
-
-	fmt.Println("BufferSize: ", *cli.BufferSize)
-	fmt.Println("Imaging ....")
-	start := time.Now()
-	if err := Run(cli); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
-
-	start = time.Now()
-	fmt.Println("\nCalculating Hashes ....")
-	integritycheck(*cli.DST)
-	fmt.Printf("Hash Calculation Time: %v\n", time.Since(start))
-
-	start = time.Now()
 	handle(getdata(*cli.DST, cli.EviDir, in))
-	fmt.Printf("\nData Extraction Time: %v\n", time.Since(start))
 
-	if cli.CmdType == AUTOCMD {
-		fmt.Println("\n\nRunning face recognition ....")
-		start = time.Now()
-		if err := pyIdentify(cli.EviDir+"images/", *cli.PoI, *cli.ModelType); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Printf("\nPoI Identification Time: %v\n", time.Since(start))
+	switch cli.CmdType {
+	case lib.APDCMD:
+		handle(lib.PyApd(cli.EviDir+"images/", *cli.PoI, *cli.ModelType))
+	case lib.AWDCMD:
+		handle(lib.PyAwd(cli.EviDir + "images/"))
 	}
 
 	fmt.Println("\nDone!")
 }
 
 func getdata(dst, copydst string, in int) error {
-	mntloc, copysrc, err := attach(dst)
+	start := time.Now()
+	fmt.Println("\nExtracting Data ....")
+
+	mntloc, copysrc, err := lib.Attach(dst)
 	if err != nil {
 		return err
 	}
 	lib.Extract(copysrc, copydst, in)
-	return detach(mntloc)
-}
+	err = lib.Detach(mntloc)
 
-func integritycheck(dst string) {
-	md, sha, err := gethashes(dst)
-	if err != nil {
-		fmt.Println(fmt.Errorf("failed to gain hashes: %v", err))
-		os.Exit(1)
-	}
-	fmt.Println("MD5: ", md)
-	fmt.Println("SHA256: ", sha)
+	fmt.Printf("\nData Extraction Time: %v\n", time.Since(start))
+	return err
 }
 
 func handle(err error) {
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(0)
 	}
 }
 
