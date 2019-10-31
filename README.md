@@ -17,5 +17,5 @@ ImageNet, PASCAL VOC, VGG, WIDER, Face Scrub
 3. [Deep Face Detector](https://towardsdatascience.com/cnn-based-face-detector-from-dlib-c3696195e01c)
 
 ### Weapon Detection 
-1. [resnset]https://arxiv.org/abs/1512.03385
+1. [resnset](https://arxiv.org/abs/1512.03385)
 2. resnet34
