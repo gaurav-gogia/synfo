@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -20,28 +21,92 @@ type CommandLine struct {
 }
 
 func (cli *CommandLine) usage() {
-	fmt.Println("Usage: ")
-	fmt.Println("  auto -src <src_device_file> -dst <dst_file_name> -poi <poi_image_dir> [-buff <buffer_size>] [-model {hog | cnn}] | performs auto forensic image analysis for face verification")
-	fmt.Println("  ext -src <src_device_file> -dst <dst_file_name> [-buff <buffer_size>] | images device & extracts specified type of files")
-	fmt.Println("  using a fully qualified dir path is recommended for <src_device_file>")
-	fmt.Println("  default buffer size is ", defaultBuffer, " bytes")
+	fmt.Println("synfo - the sharpest sentry, in your arsenal.")
+	fmt.Println("synfo is an automated digital forensic investigation framework")
 
-	fmt.Printf("\n  ---------- EXAMPLE 1 ----------\n")
-	fmt.Printf("  ./synfo auto -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
-	fmt.Println("  ---------- EXAMPLE 2 ----------")
-	fmt.Printf("  ./synfo auto -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000 -model cnn\n\n")
+	fmt.Printf("\n\nUSAGE: synfo COMMAND [FLAGS...]")
 
-	fmt.Println("  ---------- EXAMPLE 3 ----------")
-	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
-	fmt.Println("  ---------- EXAMPLE 4 ----------")
-	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
+	fmt.Printf("\n\nFLAGS:")
+	fmt.Printf("\n -h, --help")
+	fmt.Printf("\n\tShows this help message.")
+	fmt.Printf("\n -e, --examples")
+	fmt.Printf("\n\tShow usage examples.")
+
+	fmt.Printf("\n\nCommands:")
+	fmt.Printf("\n  %s  ->  %s", EXTCMD, extcmduse)
+	fmt.Printf("\n  %s  ->  %s", APDCMD, apdcmduse)
+	fmt.Printf("\n  %s  ->  %s", AWDCMD, awdcmduse)
+
+	os.Exit(0)
 }
 
-func (cli *CommandLine) validate() {
-	if len(os.Args) < 2 {
+func (cli *CommandLine) examples() {
+	fmt.Printf("\n\nExamples:\n\n")
+	fmt.Println("  ---------- EXAMPLE 1 ----------")
+	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
+	fmt.Println("  ---------- EXAMPLE 2 ----------")
+	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
+
+	fmt.Printf("\n  ---------- EXAMPLE 3 ----------\n")
+	fmt.Printf("  ./synfo apd -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
+	fmt.Println("  ---------- EXAMPLE 4 ----------")
+	fmt.Printf("  ./synfo apd -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -buff 50000000 -model cnn\n\n")
+
+	fmt.Println("  ---------- EXAMPLE 5 ----------")
+	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
+	fmt.Println("  ---------- EXAMPLE 6 ----------")
+	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso -buff 50000000\n\n")
+	os.Exit(0)
+}
+
+func (cli *CommandLine) extusage() {
+	basicusage(EXTCMD, extcmduse)
+	os.Exit(0)
+}
+func (cli *CommandLine) apdusage() {
+	basicusage(APDCMD, apdcmduse)
+
+	fmt.Printf("\n\n -model [default: %s]", defaultModel)
+	fmt.Printf("\n\t%s", modelflaghelp)
+
+	os.Exit(0)
+}
+func (cli *CommandLine) awdusage() {
+	basicusage(AWDCMD, awdcmduse)
+	os.Exit(0)
+}
+
+func basicusage(cmdname, cmduse string) {
+	fmt.Printf("synfo %s -> %s", cmdname, cmduse)
+	fmt.Printf("\n\nUSAGE: synfo %s [FLAGS...]", cmdname)
+
+	fmt.Printf("\n\nFLAGS:")
+	fmt.Printf("\n -src")
+	fmt.Printf("\n\t%s", srcflaghelp)
+	fmt.Printf("\n -dst")
+	fmt.Printf("\n\t%s", dstflaghelp)
+
+	fmt.Printf("\n\nOPTIONAL FLAGS:")
+	fmt.Printf("\n -bs [default: %d]", defaultBuffer)
+	fmt.Printf("\n\t%s", bsflaghelp)
+}
+
+func (cli *CommandLine) validate() error {
+	switch len(os.Args) {
+	case 1:
 		cli.usage()
-		os.Exit(0)
+	case 2:
+		if (os.Args[1] == "-h") || (os.Args[1] == "--help") {
+			cli.usage()
+		} else if (os.Args[1] == "-e") || (os.Args[1] == "--examples") {
+			cli.examples()
+		} else if (os.Args[1] == "ext") || (os.Args[1] == "apd") || (os.Args[1] == "awd") {
+			return nil
+		} else {
+			return errors.New("Unknown argument: " + os.Args[1])
+		}
 	}
+	return nil
 }
 
 // NewCli function creates new instances of CLI
@@ -49,91 +114,53 @@ func NewCli() (CommandLine, error) {
 	var cli CommandLine
 	var err error
 
-	cli.validate()
-
-	autocmd := flag.NewFlagSet("auto", flag.ExitOnError)
-	extcmd := flag.NewFlagSet("ext", flag.ExitOnError)
-
-	switch os.Args[1] {
-	case "auto":
-		cli.SRC = autocmd.String("src", "", "Source root directory from where you wish to start scanning")
-		cli.DST = autocmd.String("dst", "", "Destination directory where you wish to save output file")
-		cli.PoI = autocmd.String("poi", "", "Image directory of suspects' face")
-		cli.BufferSize = autocmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
-		cli.ModelType = autocmd.String("model", defaultModel, "ML/DL Model to be used")
-		return cli, autocmd.Parse(os.Args[2:])
-	case "ext":
-		cli.SRC = extcmd.String("src", "", "Source root directory from where you wish to start scanning")
-		cli.DST = extcmd.String("dst", "", "Destination directory where you wish to save output file")
-		cli.BufferSize = extcmd.Uint64("buff", defaultBuffer, "Buffer size that you wish to use")
-		return cli, extcmd.Parse(os.Args[2:])
-	default:
-		cli.usage()
-		os.Exit(0)
+	if err := cli.validate(); err != nil {
+		return cli, err
 	}
 
-	if autocmd.Parsed() {
-		if *cli.SRC == "" || *cli.DST == "" || *cli.PoI == "" {
-			cli.usage()
-			os.Exit(0)
-		} else if strings.HasSuffix(*cli.SRC, "/") || !(strings.HasPrefix(*cli.SRC, "/dev/")) {
-			cli.usage()
-			os.Exit(0)
-		} else if strings.HasSuffix(*cli.DST, "/") {
-			*cli.DST = *cli.DST + "evi.iso"
-		} else if !(strings.HasSuffix(*cli.PoI, "/")) {
-			*cli.PoI += "/"
-		} else if err := sanityCheck(*cli.DST); err != nil {
-			cli.usage()
-			os.Exit(0)
-		}
+	apdcmd := flag.NewFlagSet("apd", flag.ExitOnError)
+	extcmd := flag.NewFlagSet("ext", flag.ExitOnError)
+	awdcmd := flag.NewFlagSet("awd", flag.ExitOnError)
 
-		switch *cli.ModelType {
-		case "cnn":
-			fallthrough
-		case "hog":
-		default:
-			cli.usage()
-			os.Exit(0)
+	switch os.Args[1] {
+	case EXTCMD:
+		cli.SRC = extcmd.String("src", "", srcflaghelp)
+		cli.DST = extcmd.String("dst", "", dstflaghelp)
+		cli.BufferSize = extcmd.Uint64("bs", defaultBuffer, bsflaghelp)
+		if err := extcmd.Parse(os.Args[2:]); err != nil {
+			return cli, err
 		}
-
-		cli.CmdType = AUTOCMD
+	case APDCMD:
+		cli.SRC = apdcmd.String("src", "", srcflaghelp)
+		cli.DST = apdcmd.String("dst", "", dstflaghelp)
+		cli.PoI = apdcmd.String("poi", "", poiflaghelp)
+		cli.BufferSize = apdcmd.Uint64("bs", defaultBuffer, bsflaghelp)
+		cli.ModelType = apdcmd.String("model", defaultModel, modelflaghelp)
+		if err := apdcmd.Parse(os.Args[2:]); err != nil {
+			return cli, err
+		}
+	case AWDCMD:
+		cli.SRC = awdcmd.String("src", "", srcflaghelp)
+		cli.DST = awdcmd.String("dst", "", dstflaghelp)
+		cli.BufferSize = extcmd.Uint64("bs", defaultBuffer, bsflaghelp)
+		if err := awdcmd.Parse(os.Args[2:]); err != nil {
+			return cli, err
+		}
+	default:
+		cli.usage()
 	}
 
 	if extcmd.Parsed() {
-		if *cli.SRC == "" || *cli.DST == "" {
-			cli.usage()
-			os.Exit(0)
-		} else if strings.HasSuffix(*cli.SRC, "/") || !(strings.HasPrefix(*cli.SRC, "/dev/")) {
-			cli.usage()
-			os.Exit(0)
-		} else if strings.HasSuffix(*cli.DST, "/") {
-			*cli.DST = *cli.DST + "evi.iso"
-		} else if err := sanityCheck(*cli.DST); err != nil {
-			cli.usage()
-			os.Exit(0)
-		}
-		cli.CmdType = EXTCMD
+		cli.parseExt()
+	}
+	if apdcmd.Parsed() {
+		cli.parseApd()
+	}
+	if awdcmd.Parsed() {
+		cli.parseAwd()
 	}
 
-	*cli.SRC, err = filepath.Abs(*cli.SRC)
-	if err != nil {
-		fmt.Println("Could NOT convert into Absolute path")
-		os.Exit(0)
-	}
-	*cli.DST, err = filepath.Abs(*cli.DST)
-	if err != nil {
-		fmt.Println("Could NOT convert into Absolute path")
-		os.Exit(0)
-	}
-
-	cli.EviDir, _ = filepath.Split(*cli.DST)
-
-	dir, name := filepath.Split(*cli.DST)
-	name = strings.TrimSuffix(name, filepath.Ext(name))
-	*cli.DST = dir + name + ".iso"
-
-	*cli.BufferSize = fixbuffsize(*cli.BufferSize)
+	err = cli.finetuning()
 
 	return cli, err
 }
@@ -146,4 +173,89 @@ func fixbuffsize(buffsize uint64) uint64 {
 	fmt.Println("Requested buffersize was too high. Resetting it to: ", defaultBuffer)
 
 	return defaultBuffer
+}
+
+func (cli *CommandLine) parseExt() {
+	if len(os.Args) < 4 {
+		cli.extusage()
+	}
+
+	if *cli.SRC == "" || *cli.DST == "" {
+		cli.extusage()
+	} else if strings.HasSuffix(*cli.SRC, "/") || !(strings.HasPrefix(*cli.SRC, "/dev/")) {
+		cli.extusage()
+	} else if strings.HasSuffix(*cli.DST, "/") {
+		*cli.DST = *cli.DST + defaultDiskImage
+	} else if err := sanityCheck(*cli.DST); err != nil {
+		cli.extusage()
+	}
+	cli.CmdType = EXTCMD
+}
+
+func (cli *CommandLine) parseApd() {
+	if len(os.Args) < 5 {
+		cli.apdusage()
+	}
+
+	if *cli.SRC == "" || *cli.DST == "" || *cli.PoI == "" {
+		cli.apdusage()
+	} else if strings.HasSuffix(*cli.SRC, "/") || !(strings.HasPrefix(*cli.SRC, "/dev/")) {
+		cli.apdusage()
+	} else if strings.HasSuffix(*cli.DST, "/") {
+		*cli.DST = *cli.DST + defaultDiskImage
+	} else if !(strings.HasSuffix(*cli.PoI, "/")) {
+		*cli.PoI += "/"
+	} else if err := sanityCheck(*cli.DST); err != nil {
+		cli.apdusage()
+	}
+
+	switch *cli.ModelType {
+	case "cnn":
+		fallthrough
+	case "hog":
+	default:
+		cli.apdusage()
+	}
+
+	cli.CmdType = APDCMD
+}
+
+func (cli *CommandLine) parseAwd() {
+	if len(os.Args) < 4 {
+		cli.awdusage()
+	}
+
+	if *cli.SRC == "" || *cli.DST == "" {
+		cli.awdusage()
+	} else if strings.HasSuffix(*cli.SRC, "/") || !(strings.HasPrefix(*cli.SRC, "/dev/")) {
+		cli.awdusage()
+	} else if strings.HasSuffix(*cli.DST, "/") {
+		*cli.DST = *cli.DST + defaultDiskImage
+	} else if err := sanityCheck(*cli.DST); err != nil {
+		cli.awdusage()
+	}
+	cli.CmdType = AWDCMD
+}
+
+func (cli *CommandLine) finetuning() error {
+	var err error
+
+	*cli.SRC, err = filepath.Abs(*cli.SRC)
+	if err != nil {
+		return errors.New("Could NOT convert" + *cli.SRC + "into Absolute path")
+	}
+	*cli.DST, err = filepath.Abs(*cli.DST)
+	if err != nil {
+		return errors.New("Could NOT convert" + *cli.DST + "into Absolute path")
+	}
+
+	cli.EviDir, _ = filepath.Split(*cli.DST)
+
+	dir, name := filepath.Split(*cli.DST)
+	name = strings.TrimSuffix(name, filepath.Ext(name))
+	*cli.DST = dir + name + ".iso"
+
+	*cli.BufferSize = fixbuffsize(*cli.BufferSize)
+
+	return err
 }

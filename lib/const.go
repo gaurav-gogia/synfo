@@ -9,13 +9,27 @@ const (
 )
 
 const (
-	defaultBuffer = 10 * 1024
-	defaultModel  = "hog"
-	mountinfoPath = "/proc/self/mountinfo"
-	partfile      = ".part"
+	defaultBuffer    = 10 * 1024
+	defaultModel     = "hog"
+	defaultDiskImage = "evi.iso"
+	mountinfoPath    = "/proc/self/mountinfo"
 )
 
 const (
-	AUTOCMD = "AUTO"
-	EXTCMD  = "EXTRACT"
+	extcmduse = "Extracts specified type of files from target device."
+	apdcmduse = "Runs an HoG/CNN based automated PoI Identification module."
+	awdcmduse = "Runs a CNN based automated Weapon Detection module."
+
+	srcflaghelp   = "Source path for special device block file."
+	dstflaghelp   = "Destination directory for disk image."
+	bsflaghelp    = "Buffer Size in bytes to be used during disk imaging."
+	poiflaghelp   = "Directory of images with known faces."
+	modelflaghelp = "ML Model type to be used for face detection {hog | cnn}."
+)
+
+// Global command name constants
+const (
+	APDCMD = "apd"
+	AWDCMD = "awd"
+	EXTCMD = "ext"
 )
