@@ -14,7 +14,7 @@ type CommandLine struct {
 	SRC        *string
 	DST        *string
 	PoI        *string
-	BufferSize *uint64
+	BufferSize *int64
 	CmdType    string
 	EviDir     string
 	ModelType  *string
@@ -134,7 +134,7 @@ func NewCli() (CommandLine, error) {
 		cli.SRC = extcmd.String("src", "", srcflaghelp)
 		cli.DST = extcmd.String("dst", "", dstflaghelp)
 		cli.FileType = extcmd.String("ft", defaultFt, ftflaghelp)
-		cli.BufferSize = extcmd.Uint64("bs", defaultBuffer, bsflaghelp)
+		cli.BufferSize = extcmd.Int64("bs", defaultBuffer, bsflaghelp)
 		if err := extcmd.Parse(os.Args[2:]); err != nil {
 			return cli, err
 		}
@@ -142,7 +142,7 @@ func NewCli() (CommandLine, error) {
 		cli.SRC = apdcmd.String("src", "", srcflaghelp)
 		cli.DST = apdcmd.String("dst", "", dstflaghelp)
 		cli.PoI = apdcmd.String("poi", "", poiflaghelp)
-		cli.BufferSize = apdcmd.Uint64("bs", defaultBuffer, bsflaghelp)
+		cli.BufferSize = apdcmd.Int64("bs", defaultBuffer, bsflaghelp)
 		cli.ModelType = apdcmd.String("model", defaultModel, modelflaghelp)
 		if err := apdcmd.Parse(os.Args[2:]); err != nil {
 			return cli, err
@@ -150,7 +150,7 @@ func NewCli() (CommandLine, error) {
 	case AWDCMD:
 		cli.SRC = awdcmd.String("src", "", srcflaghelp)
 		cli.DST = awdcmd.String("dst", "", dstflaghelp)
-		cli.BufferSize = extcmd.Uint64("bs", defaultBuffer, bsflaghelp)
+		cli.BufferSize = extcmd.Int64("bs", defaultBuffer, bsflaghelp)
 		if err := awdcmd.Parse(os.Args[2:]); err != nil {
 			return cli, err
 		}
@@ -173,7 +173,7 @@ func NewCli() (CommandLine, error) {
 	return cli, err
 }
 
-func fixbuffsize(buffsize uint64) uint64 {
+func fixbuffsize(buffsize int64) int64 {
 	if buffsize < 50*1024 {
 		return buffsize
 	}

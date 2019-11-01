@@ -38,7 +38,7 @@ func Run(cli CommandLine) error {
 	defer unix.Close(read)
 	defer unix.Close(write)
 
-	for i := uint64(0); i <= size; i += *cli.BufferSize {
+	for i := int64(0); i <= size; i += *cli.BufferSize {
 		percent := (float64(i) / float64(size)) * 100
 		fmt.Printf("\rProgress .... %f%%", percent)
 
@@ -84,7 +84,7 @@ func setup(src, dst string) (int, int, error) {
 	return read, write, nil
 }
 
-func clone(buffersize uint64, read, write int) error {
+func clone(buffersize int64, read, write int) error {
 	buff := make([]byte, buffersize)
 
 	if _, err := unix.Read(read, buff); err != nil {
