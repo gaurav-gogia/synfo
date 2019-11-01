@@ -354,7 +354,7 @@ func carvefile(buf *[]byte, count *int64, dst, path string) error {
 
 	size := finfo.Size()
 	if size >= 2e+9 {
-		errors.New("File is too big to be processed")
+		return errors.New("File is too big to be processed")
 	}
 
 	fd, err := unix.Open(path, unix.O_RDONLY, 0777)
