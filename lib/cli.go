@@ -19,6 +19,8 @@ type CommandLine struct {
 	EviDir     string
 	ModelType  *string
 	FileType   *string
+	Help       *bool
+	Examples   *bool
 }
 
 func (cli *CommandLine) usage() {
@@ -29,9 +31,9 @@ func (cli *CommandLine) usage() {
 
 	fmt.Printf("\n\nFLAGS:")
 	fmt.Printf("\n -h, --help")
-	fmt.Printf("\n\tShows this help message.")
+	fmt.Printf("\n\t%s", helpusageflag)
 	fmt.Printf("\n -e, --examples")
-	fmt.Printf("\n\tShow usage examples.")
+	fmt.Printf("\n\t%s", exampleusageflag)
 
 	fmt.Printf("\n\nCommands:")
 	fmt.Printf("\n  %s  ->  %s", EXTCMD, extcmduse)
@@ -42,24 +44,34 @@ func (cli *CommandLine) usage() {
 }
 
 func (cli *CommandLine) examples() {
-	fmt.Printf("\n\nExamples:\n\n")
+	extexamples()
+	apdexamples()
+	awdexamples()
+	os.Exit(0)
+}
+
+func extexamples() {
+	fmt.Printf("\n\nExamples: ext\n\n")
 	fmt.Println("  ---------- EXAMPLE 1 ----------")
 	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
 	fmt.Println("  ---------- EXAMPLE 2 ----------")
 	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -bs 50000000\n\n")
 	fmt.Println("  ---------- EXAMPLE 3 ----------")
 	fmt.Printf("  ./synfo ext -src /dev/somefile -dst ./somefolder/evi.iso -ft audio\n\n")
-
-	fmt.Printf("\n  ---------- EXAMPLE 4 ----------\n")
+}
+func apdexamples() {
+	fmt.Printf("\n\nExamples: apd\n\n")
+	fmt.Printf("\n  ---------- EXAMPLE 1 ----------\n")
 	fmt.Printf("  ./synfo apd -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/\n\n")
-	fmt.Println("  ---------- EXAMPLE 5 ----------")
+	fmt.Println("  ---------- EXAMPLE 2 ----------")
 	fmt.Printf("  ./synfo apd -src /dev/somefile -dst ./somefolder/evi.iso -poi ./person1/images/ -bs 50000000 -model cnn\n\n")
-
+}
+func awdexamples() {
+	fmt.Printf("\n\nExamples: awd\n\n")
 	fmt.Println("  ---------- EXAMPLE 6 ----------")
 	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
 	fmt.Println("  ---------- EXAMPLE 7 ----------")
 	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso -bs 50000000\n\n")
-	os.Exit(0)
 }
 
 func (cli *CommandLine) extusage() {
@@ -67,6 +79,8 @@ func (cli *CommandLine) extusage() {
 
 	fmt.Printf("\n\n -ft [default: %s]", defaultFt)
 	fmt.Printf("\n\t%s", ftflaghelp)
+
+	extexamples()
 
 	os.Exit(0)
 }
@@ -76,10 +90,13 @@ func (cli *CommandLine) apdusage() {
 	fmt.Printf("\n\n -model [default: %s]", defaultModel)
 	fmt.Printf("\n\t%s", modelflaghelp)
 
+	apdexamples()
+
 	os.Exit(0)
 }
 func (cli *CommandLine) awdusage() {
 	basicusage(AWDCMD, awdcmduse)
+	awdexamples()
 	os.Exit(0)
 }
 
@@ -88,6 +105,11 @@ func basicusage(cmdname, cmduse string) {
 	fmt.Printf("\n\nUSAGE: synfo %s [FLAGS...]", cmdname)
 
 	fmt.Printf("\n\nFLAGS:")
+	fmt.Printf("\n -h, --help")
+	fmt.Printf("\n\t%s", helpusageflag)
+	fmt.Printf("\n -e, --examples")
+	fmt.Printf("\n\t%s", exampleusageflag)
+
 	fmt.Printf("\n -src")
 	fmt.Printf("\n\t%s", srcflaghelp)
 	fmt.Printf("\n -dst")

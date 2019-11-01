@@ -27,6 +27,9 @@ const (
 	poiflaghelp   = "Directory of images with known faces."
 	modelflaghelp = "ML Model type to be used for face detection {hog | cnn}."
 	ftflaghelp    = "Type of file(s) to be extracted {image | audio | video | archive}."
+
+	helpusageflag    = "Shows this help message."
+	exampleusageflag = "Shows example usage."
 )
 
 // Global command name constants
