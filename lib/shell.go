@@ -48,7 +48,7 @@ func Detach(name string) error {
 		if err := exec.Command("umount", name).Run(); err != nil {
 			return err
 		}
-		return os.Remove(name)
+		return os.RemoveAll(name)
 	}
 	return errors.New("unknown runtime")
 }
