@@ -105,11 +105,6 @@ func basicusage(cmdname, cmduse string) {
 	fmt.Printf("\n\nUSAGE: synfo %s [FLAGS...]", cmdname)
 
 	fmt.Printf("\n\nFLAGS:")
-	fmt.Printf("\n -h, --help")
-	fmt.Printf("\n\t%s", helpusageflag)
-	fmt.Printf("\n -e, --examples")
-	fmt.Printf("\n\t%s", exampleusageflag)
-
 	fmt.Printf("\n -src")
 	fmt.Printf("\n\t%s", srcflaghelp)
 	fmt.Printf("\n -dst")
