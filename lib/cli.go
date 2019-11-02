@@ -68,9 +68,9 @@ func apdexamples() {
 }
 func awdexamples() {
 	fmt.Printf("\n\nExamples: awd\n\n")
-	fmt.Println("  ---------- EXAMPLE 6 ----------")
+	fmt.Println("  ---------- EXAMPLE 1 ----------")
 	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso\n\n")
-	fmt.Println("  ---------- EXAMPLE 7 ----------")
+	fmt.Println("  ---------- EXAMPLE 2 ----------")
 	fmt.Printf("  ./synfo awd -src /dev/somefile -dst ./somefolder/evi.iso -bs 50000000\n\n")
 }
 
