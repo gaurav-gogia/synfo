@@ -2,15 +2,16 @@ package lib
 
 // Global Constants
 const (
-	IMAGE = iota + 1
-	VIDEO
-	AUDIO
-	ARCHIVE
+	IMAGE   = "image"
+	VIDEO   = "video"
+	AUDIO   = "audio"
+	ARCHIVE = "archive"
 )
 
 const (
 	defaultBuffer    = 10 * 1024
 	defaultModel     = "hog"
+	defaultFt        = "image"
 	defaultDiskImage = "evi.iso"
 	mountinfoPath    = "/proc/self/mountinfo"
 )
@@ -25,6 +26,10 @@ const (
 	bsflaghelp    = "Buffer Size in bytes to be used during disk imaging."
 	poiflaghelp   = "Directory of images with known faces."
 	modelflaghelp = "ML Model type to be used for face detection {hog | cnn}."
+	ftflaghelp    = "Type of file(s) to be extracted {image | audio | video | archive}."
+
+	helpusageflag    = "Shows this help message."
+	exampleusageflag = "Shows example usage."
 )
 
 // Global command name constants

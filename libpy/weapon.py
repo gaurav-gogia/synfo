@@ -31,11 +31,11 @@ def detect(img_path: str, model):
         print()
     else:
         print('#######################################################################')
-        print('File: ', img_path.split('/')[-1])
-        print('prediction: ', pred_class)
+        print('File: ' + img_path.split('/')[-1])
+        print('prediction: ' + pred_class)
         print('probabilities:')
-        print('handgun: ', outputs[0], '\nknife: ',
-              outputs[1], '\nrifle: ', outputs[2])
+        print('handgun: ' + str(outputs[0]) + '\nknife: ' +
+              str(outputs[1]) + '\nrifle: ' + str(outputs[2]))
 
 
 def main():

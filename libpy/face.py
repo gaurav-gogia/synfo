@@ -40,9 +40,9 @@ def match(test: str, train_file_names: list, outfile, model_type: str):
 
         else:
             if len(test_enc) <= 0:
-                print('No faces found in: ', test, file=outfile)
+                print('No faces found in: ' + test, file=outfile)
             if len(train_enc) <= 0:
-                print('No faces found in: ', train, file=outfile)
+                print('No faces found in: ' + train, file=outfile)
 
 
 def match_one_multi(test: str, train: str, outfile: str, encsingle, enclist, train_multi: bool):

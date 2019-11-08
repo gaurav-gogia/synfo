@@ -14,16 +14,11 @@ func init() {
 }
 
 func main() {
-	in := 1
-
 	cli, err := lib.NewCli()
 	handle(err)
 
 	handle(lib.Run(cli))
-	if cli.CmdType == lib.EXTCMD {
-		in = menu()
-	}
-	handle(getdata(*cli.DST, cli.EviDir, in))
+	handle(getdata(*cli.DST, cli.EviDir, *cli.FileType))
 
 	switch cli.CmdType {
 	case lib.APDCMD:
@@ -35,7 +30,7 @@ func main() {
 	fmt.Println("\nDone!")
 }
 
-func getdata(dst, copydst string, in int) error {
+func getdata(dst, copydst string, ft string) error {
 	start := time.Now()
 	fmt.Println("\nExtracting Data ....")
 
@@ -43,7 +38,7 @@ func getdata(dst, copydst string, in int) error {
 	if err != nil {
 		return err
 	}
-	lib.Extract(copysrc, copydst, in)
+	lib.Extract(copysrc, copydst, ft)
 	err = lib.Detach(mntloc)
 
 	fmt.Printf("\nData Extraction Time: %v\n", time.Since(start))
@@ -55,16 +50,4 @@ func handle(err error) {
 		fmt.Println(err)
 		os.Exit(0)
 	}
-}
-
-func menu() int {
-	var in int
-	fmt.Println("What do you wish to extract?")
-	fmt.Println("1. Picture Files")
-	fmt.Println("2. Video Files")
-	fmt.Println("3. Audio Files")
-	fmt.Println("4. Archive Files")
-	fmt.Print("Make your choice: ")
-	fmt.Scanln(&in)
-	return in
 }
