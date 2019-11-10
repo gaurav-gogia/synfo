@@ -17,7 +17,7 @@ func main() {
 	cli, err := lib.NewCli()
 	handle(err)
 
-	handle(lib.Run(cli))
+	handle(lib.Clone(cli))
 	handle(getdata(cli.DST, cli.EviDir, cli.FileType))
 
 	switch cli.CmdType {

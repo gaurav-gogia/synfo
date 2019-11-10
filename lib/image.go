@@ -15,8 +15,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// Run function is the entrypoint for disk imaging, it runs disk imaging
-func Run(cli CommandLine) error {
+// Clone function is the entrypoint for disk imaging, it runs disk imaging
+func Clone(cli CommandLine) error {
 	start := time.Now()
 
 	if !confirm(cli.DST) {
