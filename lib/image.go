@@ -42,11 +42,11 @@ func Clone(cli CommandLine) error {
 		}
 
 		if size-i <= cli.BufferSize {
-			if err := clone(size-i, read, write); err != nil {
+			if err := copyData(size-i, read, write); err != nil {
 				return err
 			}
 		} else {
-			if err := clone(cli.BufferSize, read, write); err != nil {
+			if err := copyData(cli.BufferSize, read, write); err != nil {
 				return err
 			}
 		}
@@ -84,7 +84,7 @@ func setup(src, dst string) (int, int, int64, error) {
 	return read, write, size, nil
 }
 
-func clone(buffersize int64, read, write int) error {
+func copyData(buffersize int64, read, write int) error {
 	buff := make([]byte, buffersize)
 
 	if _, err := unix.Read(read, buff); err != nil {
