@@ -15,30 +15,25 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// Run function is the entrypoint for disk imaging, it runs disk imaging
-func Run(cli CommandLine) error {
+// Clone function is the entrypoint for disk imaging, it runs disk imaging
+func Clone(cli CommandLine) error {
 	start := time.Now()
 
-	if !confirm(*cli.DST) {
+	if !confirm(cli.DST) {
 		return nil
 	}
 
 	fmt.Println("\nImaging ....")
-	fmt.Println("Using BufferSize: ", *cli.BufferSize)
+	fmt.Println("Using BufferSize: ", cli.BufferSize)
 
-	size, err := getsize(*cli.SRC)
-	if err != nil {
-		return err
-	}
-
-	read, write, err := setup(*cli.SRC, *cli.DST)
+	read, write, size, err := setup(cli.SRC, cli.DST)
 	if err != nil {
 		return err
 	}
 	defer unix.Close(read)
 	defer unix.Close(write)
 
-	for i := int64(0); i <= size; i += *cli.BufferSize {
+	for i := int64(0); i <= size; i += cli.BufferSize {
 		percent := (float64(i) / float64(size)) * 100
 		fmt.Printf("\rProgress .... %f%%", percent)
 
@@ -46,12 +41,12 @@ func Run(cli CommandLine) error {
 			break
 		}
 
-		if size-i <= *cli.BufferSize {
-			if err := clone(size-i, read, write); err != nil {
+		if size-i <= cli.BufferSize {
+			if err := copyData(size-i, read, write); err != nil {
 				return err
 			}
 		} else {
-			if err := clone(*cli.BufferSize, read, write); err != nil {
+			if err := copyData(cli.BufferSize, read, write); err != nil {
 				return err
 			}
 		}
@@ -59,32 +54,37 @@ func Run(cli CommandLine) error {
 	fmt.Println()
 
 	fmt.Printf("\nImaging Time: %v\n", time.Since(start))
-	integritycheck(*cli.DST)
+	integritycheck(cli.DST)
 
 	return nil
 }
 
-func setup(src, dst string) (int, int, error) {
+func setup(src, dst string) (int, int, int64, error) {
+	size, err := getsize(src)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
 	destination, err := create(dst)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 	destination.Close()
 
 	read, err := unix.Open(src, unix.O_RDONLY, 0777)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 
 	write, err := unix.Open(dst, unix.O_WRONLY, 0777)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 
-	return read, write, nil
+	return read, write, size, nil
 }
 
-func clone(buffersize int64, read, write int) error {
+func copyData(buffersize int64, read, write int) error {
 	buff := make([]byte, buffersize)
 
 	if _, err := unix.Read(read, buff); err != nil {

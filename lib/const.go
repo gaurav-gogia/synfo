@@ -30,6 +30,7 @@ const (
 
 	helpusageflag    = "Shows this help message."
 	exampleusageflag = "Shows example usage."
+	flashusageflag   = "Boosts disk imaging speed."
 )
 
 // Global command name constants

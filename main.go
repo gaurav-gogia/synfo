@@ -17,12 +17,12 @@ func main() {
 	cli, err := lib.NewCli()
 	handle(err)
 
-	handle(lib.Run(cli))
-	handle(getdata(*cli.DST, cli.EviDir, *cli.FileType))
+	handle(lib.Clone(cli))
+	handle(getdata(cli.DST, cli.EviDir, cli.FileType))
 
 	switch cli.CmdType {
 	case lib.APDCMD:
-		handle(lib.PyApd(cli.EviDir+"images/", *cli.PoI, *cli.ModelType))
+		handle(lib.PyApd(cli.EviDir+"images/", cli.PoI, cli.ModelType))
 	case lib.AWDCMD:
 		handle(lib.PyAwd(cli.EviDir + "images/"))
 	}
