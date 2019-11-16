@@ -34,28 +34,28 @@ func Extract(root, dst string, ft string) {
 			buf, err := ioutil.ReadFile(filepath)
 			switch ft {
 			case IMAGE:
-				if err := copyimage(&buf, &count, dst+"images/", info.Name()); err != nil {
+				if err := copyimage(dst+"images/", info.Name(), &buf, &count); err != nil {
 					fmt.Println(err)
 				}
-				if err := getimgfrompdf(&buf, &count, dst+"images/", filepath); err != nil {
+				if err := getimgfrompdf(dst+"images/", filepath, &buf, &count); err != nil {
 					fmt.Println(err)
 				}
-				if err := carvefile(&buf, &count, dst+"images/", filepath); err != nil {
+				if err := carvefile(dst+"images/", filepath, &buf, &count); err != nil {
 					fmt.Println(err)
 				}
-				if err := getimgfrompop(&buf, &count, dst+"images/", filepath); err != nil {
+				if err := getimgfrompop(dst+"images/", filepath, &buf, &count); err != nil {
 					fmt.Println(err)
 				}
 			case VIDEO:
-				if err := copyvideo(&buf, &count, dst+"videos/", info.Name()); err != nil {
+				if err := copyvideo(dst+"videos/", info.Name(), &buf, &count); err != nil {
 					fmt.Println(err)
 				}
 			case AUDIO:
-				if err := copyaudio(&buf, &count, dst+"audios/", info.Name()); err != nil {
+				if err := copyaudio(dst+"audios/", info.Name(), &buf, &count); err != nil {
 					fmt.Println(err)
 				}
 			case ARCHIVE:
-				if err := copyarchive(&buf, &count, dst+"archives/", info.Name()); err != nil {
+				if err := copyarchive(dst+"archives/", info.Name(), &buf, &count); err != nil {
 					fmt.Println(err)
 				}
 			default:
@@ -71,11 +71,11 @@ func Extract(root, dst string, ft string) {
 	fmt.Println("\n\nTotal files found: ", count)
 }
 
-func getimgfrompdf(buf *[]byte, count *int64, dst, infile string) error {
-	filetypedir(dst)
+func getimgfrompdf(dstPath, dstFile string, buf *[]byte, count *int64) error {
+	filetypedir(dstPath)
 
 	if ispdf(*buf) {
-		f, err := os.Open(infile)
+		f, err := os.Open(dstFile)
 		defer f.Close()
 		if err != nil {
 			return err
@@ -106,7 +106,7 @@ func getimgfrompdf(buf *[]byte, count *int64, dst, infile string) error {
 				return err
 			}
 
-			if err := extractImagesOnPage(page, dst, infile, count); err != nil {
+			if err := extractImagesOnPage(page, dstPath, dstFile, count); err != nil {
 				return err
 			}
 		}
@@ -234,11 +234,11 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dst, 
 	return nil
 }
 
-func saveimage(dst, infile string, img image.Image, count *int64) error {
+func saveimage(dstPath, infile string, img image.Image, count *int64) error {
 	_, fname := filepath.Split(infile)
 	name := fmt.Sprintf("%s_%s.jpg", fname, getimgname(4))
 
-	dstFile, err := os.Create(dst + name)
+	dstFile, err := os.Create(dstPath + name)
 	defer dstFile.Close()
 	if err != nil {
 		return err
@@ -253,52 +253,52 @@ func saveimage(dst, infile string, img image.Image, count *int64) error {
 	return nil
 }
 
-func copyimage(buf *[]byte, count *int64, dst, name string) error {
+func copyimage(dstPath, name string, buf *[]byte, count *int64) error {
 	var err error
-	filetypedir(dst)
+	filetypedir(dstPath)
 
 	if filetype.IsImage(*buf) {
 		*count++
-		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rImage File Found: %s", name)
 	}
 
 	return err
 }
 
-func copyvideo(buf *[]byte, count *int64, dst, name string) error {
+func copyvideo(dstPath, name string, buf *[]byte, count *int64) error {
 	var err error
-	filetypedir(dst)
+	filetypedir(dstPath)
 
 	if filetype.IsVideo(*buf) {
 		*count++
-		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rVideo File Found: %s", name)
 	}
 
 	return err
 }
 
-func copyaudio(buf *[]byte, count *int64, dst, name string) error {
+func copyaudio(dstPath, name string, buf *[]byte, count *int64) error {
 	var err error
-	filetypedir(dst)
+	filetypedir(dstPath)
 
 	if filetype.IsAudio(*buf) {
 		*count++
-		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rAudio File Found: %s", name)
 	}
 
 	return err
 }
 
-func copyarchive(buf *[]byte, count *int64, dst, name string) error {
+func copyarchive(dstPath, name string, buf *[]byte, count *int64) error {
 	var err error
-	filetypedir(dst)
+	filetypedir(dstPath)
 
 	if filetype.IsArchive(*buf) {
 		*count++
-		err = ioutil.WriteFile(dst+name, *buf, 0644)
+		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rArchive File Found: %s", name)
 	}
 
@@ -338,16 +338,16 @@ func getimgname(length int) string {
 	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }
 
-func carvefile(buf *[]byte, count *int64, dst, path string) error {
-	if ispopdoc(buf, filepath.Ext(path)) || ispdf(*buf) || filetype.IsImage(*buf) {
+func carvefile(srcFile, dstPath string, buf *[]byte, count *int64) error {
+	if ispopdoc(buf, filepath.Ext(srcFile)) || ispdf(*buf) || filetype.IsImage(*buf) {
 		return nil
 	}
 
-	filetypedir(dst)
-	_, name := filepath.Split(path)
+	filetypedir(dstPath)
+	_, name := filepath.Split(srcFile)
 	fmt.Println("\nFile carver running on: ", name)
 
-	finfo, err := os.Stat(path)
+	finfo, err := os.Stat(srcFile)
 	if err != nil {
 		return err
 	}
@@ -357,32 +357,32 @@ func carvefile(buf *[]byte, count *int64, dst, path string) error {
 		return errors.New("File is too big to be processed")
 	}
 
-	fd, err := unix.Open(path, unix.O_RDONLY, 0777)
-	defer unix.Close(fd)
+	read, err := unix.Open(srcFile, unix.O_RDONLY, 0777)
 	if err != nil {
 		return err
 	}
+	defer unix.Close(read)
 
-	if err := getjpg(count, fd, size, dst); err != nil {
+	if err := getjpg(dstPath, read, size, count); err != nil {
 		return err
 	}
-	if err := getgif(count, fd, size, dst); err != nil {
+	if err := getgif(dstPath, read, size, count); err != nil {
 		return err
 	}
-	if err := getpng(count, fd, size, dst); err != nil {
+	if err := getpng(dstPath, read, size, count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getjpg(count *int64, fd int, size int64, dst string) error {
+func getjpg(dstPath string, read int, size int64, count *int64) error {
 	buff := make([]byte, 1)
 	var counter int8
 	var carved []byte
 
 	for i := int64(0); i < size; i++ {
-		if _, err := unix.Read(fd, buff); err != nil {
+		if _, err := unix.Read(read, buff); err != nil {
 			return err
 		}
 
@@ -421,7 +421,7 @@ func getjpg(count *int64, fd int, size int64, dst string) error {
 		case 4:
 			if buff[0] == 0xd9 {
 				carved = append(carved, buff[0])
-				if err := writecarved(dst, "jpg", &carved, count); err != nil {
+				if err := writecarved(dstPath, "jpg", &carved, count); err != nil {
 					return err
 				}
 				carved = nil
@@ -435,17 +435,17 @@ func getjpg(count *int64, fd int, size int64, dst string) error {
 	return nil
 }
 
-func getgif(count *int64, fd int, size int64, dst string) error {
+func getgif(dstPath string, read int, size int64, count *int64) error {
 	buff := make([]byte, 1)
 	var counter int8
 	var carved []byte
 
-	if _, err := unix.Seek(fd, 0, 0); err != nil {
+	if _, err := unix.Seek(read, 0, 0); err != nil {
 		return err
 	}
 
 	for i := int64(0); i < size; i++ {
-		if _, err := unix.Read(fd, buff); err != nil {
+		if _, err := unix.Read(read, buff); err != nil {
 			return err
 		}
 
@@ -492,7 +492,7 @@ func getgif(count *int64, fd int, size int64, dst string) error {
 		case 5:
 			if buff[0] == 0x3b {
 				carved = append(carved, buff[0])
-				if err := writecarved(dst, "gif", &carved, count); err != nil {
+				if err := writecarved(dstPath, "gif", &carved, count); err != nil {
 					return err
 				}
 				carved = nil
@@ -506,90 +506,93 @@ func getgif(count *int64, fd int, size int64, dst string) error {
 	return nil
 }
 
-func getpng(count *int64, fd int, size int64, dst string) error {
+func getpng(dstPath string, read int, size int64, count *int64) error {
 	buff := make([]byte, 1)
 	var counter int8
 	var carved []byte
 
-	if _, err := unix.Seek(fd, 0, 0); err != nil {
-		return err
-	}
+	for i := int64(0); i < size; i++ {
+		if _, err := unix.Seek(read, 0, 0); err != nil {
+			return err
+		}
 
-	switch counter {
-	case 0:
-		if buff[0] == 0x89 {
-			carved = append(carved, buff[0])
-			counter++
-		} else {
-			carved = nil
-			counter = 0
-		}
-	case 1:
-		if buff[0] == 0x50 {
-			carved = append(carved, buff[0])
-			counter++
-		} else {
-			carved = nil
-			counter = 0
-		}
-	case 2:
-		if buff[0] == 0x4e {
-			carved = append(carved, buff[0])
-			counter++
-		} else {
-			carved = nil
-			counter = 0
-		}
-	case 3:
-		if buff[0] == 0x47 {
-			carved = append(carved, buff[0])
-			counter++
-		} else {
-			carved = nil
-			counter = 0
-		}
-	case 4:
-		if buff[0] == 0xae {
-			carved = append(carved, buff[0])
-			counter++
-		} else {
-			carved = append(carved, buff[0])
-		}
-	case 5:
-		if buff[0] == 0x42 {
-			carved = append(carved, buff[0])
-			counter++
-		} else {
-			carved = append(carved, buff[0])
-			counter--
-		}
-	case 6:
-		if buff[0] == 0x60 {
-			carved = append(carved, buff[0])
-			counter++
-		} else {
-			carved = append(carved, buff[0])
-			counter -= 2
-		}
-	case 7:
-		if buff[0] == 0x82 {
-			carved = append(carved, buff[0])
-			if err := writecarved(dst, "png", &carved, count); err != nil {
-				return err
+		switch counter {
+		case 0:
+			if buff[0] == 0x89 {
+				carved = append(carved, buff[0])
+				counter++
+			} else {
+				carved = nil
+				counter = 0
 			}
-			carved = nil
-			counter = 0
-		} else {
-			carved = append(carved, buff[0])
-			counter -= 3
+		case 1:
+			if buff[0] == 0x50 {
+				carved = append(carved, buff[0])
+				counter++
+			} else {
+				carved = nil
+				counter = 0
+			}
+		case 2:
+			if buff[0] == 0x4e {
+				carved = append(carved, buff[0])
+				counter++
+			} else {
+				carved = nil
+				counter = 0
+			}
+		case 3:
+			if buff[0] == 0x47 {
+				carved = append(carved, buff[0])
+				counter++
+			} else {
+				carved = nil
+				counter = 0
+			}
+		case 4:
+			if buff[0] == 0xae {
+				carved = append(carved, buff[0])
+				counter++
+			} else {
+				carved = append(carved, buff[0])
+			}
+		case 5:
+			if buff[0] == 0x42 {
+				carved = append(carved, buff[0])
+				counter++
+			} else {
+				carved = append(carved, buff[0])
+				counter--
+			}
+		case 6:
+			if buff[0] == 0x60 {
+				carved = append(carved, buff[0])
+				counter++
+			} else {
+				carved = append(carved, buff[0])
+				counter -= 2
+			}
+		case 7:
+			if buff[0] == 0x82 {
+				carved = append(carved, buff[0])
+				if err := writecarved(dstPath, "png", &carved, count); err != nil {
+					return err
+				}
+				carved = nil
+				counter = 0
+			} else {
+				carved = append(carved, buff[0])
+				counter -= 3
+			}
 		}
+
 	}
 
 	return nil
 }
 
-func writecarved(dst, ext string, data *[]byte, count *int64) error {
-	name := dst + getimgname(10) + "." + ext
+func writecarved(dstPath, ext string, data *[]byte, count *int64) error {
+	name := dstPath + getimgname(10) + "." + ext
 	if err := ioutil.WriteFile(name, *data, 0644); err != nil {
 		return err
 	}
@@ -599,11 +602,11 @@ func writecarved(dst, ext string, data *[]byte, count *int64) error {
 	return nil
 }
 
-func getimgfrompop(buf *[]byte, count *int64, dst, path string) error {
-	filetypedir(dst)
+func getimgfrompop(dstPath, dstFile string, buf *[]byte, count *int64) error {
+	filetypedir(dstPath)
 
-	if ispopdoc(buf, filepath.Ext(path)) {
-		r, err := zip.OpenReader(path)
+	if ispopdoc(buf, filepath.Ext(dstFile)) {
+		r, err := zip.OpenReader(dstFile)
 		if err != nil {
 			return err
 		}
@@ -613,7 +616,7 @@ func getimgfrompop(buf *[]byte, count *int64, dst, path string) error {
 			if f.FileInfo().IsDir() {
 				continue
 			} else if isimgext(filepath.Ext(f.Name)) {
-				fpath := dst + "/" + filepath.Base(path) + "_" + getimgname(6) + "_" + filepath.Base(f.Name)
+				fpath := dstPath + "/" + filepath.Base(dstFile) + "_" + getimgname(6) + "_" + filepath.Base(f.Name)
 
 				outFile, _ := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 				rc, _ := f.Open()
