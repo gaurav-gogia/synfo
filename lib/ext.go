@@ -511,8 +511,12 @@ func getpng(dstPath string, read int, size int64, count *int64) error {
 	var counter int8
 	var carved []byte
 
+	if _, err := unix.Seek(read, 0, 0); err != nil {
+		return err
+	}
+
 	for i := int64(0); i < size; i++ {
-		if _, err := unix.Seek(read, 0, 0); err != nil {
+		if _, err := unix.Read(read, buff); err != nil {
 			return err
 		}
 
