@@ -54,28 +54,41 @@ func Detach(name string) error {
 }
 
 func getsize(path string) (int64, error) {
-	if runtime.GOOS == mac {
+	switch runtime.GOOS {
+	case mac:
 		data, err := exec.Command("diskutil", "info", path).Output()
 		if err != nil {
 			return 0, err
 		}
-
 		info := strings.Split(string(data), "\n")
-
 		for _, str := range info {
 			text := fixspace(str)
 			if strings.HasPrefix(text, "Disk Size:") {
-				return getnum(text)
+				size, err := getnum(text)
+				if err != nil {
+					return 0, err
+				} else if size <= 0 {
+					return 0, errors.New("device file returned size 0, please verify the file name")
+				}
+				return size, err
 			}
 		}
-	} else if runtime.GOOS == linux {
+	case linux:
 		data, _ := exec.Command("lsblk", "--bytes", path).Output()
 		info := strings.Split(string(data), "\n")
 		words := strings.Split(string(fixspace(info[1])), " ")
-		return strconv.ParseInt(words[3], 10, 64)
+		size, err := strconv.ParseInt(words[3], 10, 64)
+		if err != nil {
+			return 0, err
+		} else if size <= 0 {
+			return 0, errors.New("device file returned size 0, please verify the file name")
+		}
+		return size, err
+	default:
+		return 0, errors.New("unknown runtime")
 	}
 
-	return 0, errors.New("unknown runtime")
+	return 0, errors.New("undefined behaviour")
 }
 
 func genname(length int) string {

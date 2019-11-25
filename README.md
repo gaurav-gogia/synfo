@@ -1,7 +1,7 @@
 # synfo
 
 ## dlib face detection models
-HoG Model
+HoG Model</br>
 MMOD = CNN Model
 
 ### dlib face recognition model
