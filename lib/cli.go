@@ -230,7 +230,7 @@ func (cli *CommandLine) parseExt() {
 		os.Exit(0)
 	}
 	if len(os.Args) < 4 {
-		cli.awdhelp()
+		cli.exthelp()
 	}
 
 	if cli.SRC == "" || cli.DST == "" {
@@ -267,7 +267,7 @@ func (cli *CommandLine) parseApd() {
 		os.Exit(0)
 	}
 	if len(os.Args) < 4 {
-		cli.awdhelp()
+		cli.apdhelp()
 	}
 
 	if cli.SRC == "" || cli.DST == "" || cli.PoI == "" {
