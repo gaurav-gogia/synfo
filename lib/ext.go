@@ -71,11 +71,11 @@ func Extract(root, dst string, ft string) {
 	fmt.Println("\n\nTotal files found: ", count)
 }
 
-func getimgfrompdf(dstPath, dstFile string, buf *[]byte, count *int64) error {
+func getimgfrompdf(dstPath, srcFile string, buf *[]byte, count *int64) error {
 	filetypedir(dstPath)
 
 	if ispdf(*buf) {
-		f, err := os.Open(dstFile)
+		f, err := os.Open(srcFile)
 		defer f.Close()
 		if err != nil {
 			return err
@@ -106,7 +106,7 @@ func getimgfrompdf(dstPath, dstFile string, buf *[]byte, count *int64) error {
 				return err
 			}
 
-			if err := extractImagesOnPage(page, dstPath, dstFile, count); err != nil {
+			if err := extractImagesOnPage(page, dstPath, srcFile, count); err != nil {
 				return err
 			}
 		}
@@ -115,16 +115,16 @@ func getimgfrompdf(dstPath, dstFile string, buf *[]byte, count *int64) error {
 	return nil
 }
 
-func extractImagesOnPage(page *pdf.PdfPage, dst, infile string, count *int64) error {
+func extractImagesOnPage(page *pdf.PdfPage, dstPath, srcFile string, count *int64) error {
 	contents, err := page.GetAllContentStreams()
 	if err != nil {
 		return err
 	}
 
-	return extImgsInContStream(contents, page.Resources, dst, infile, count)
+	return extImgsInContStream(contents, page.Resources, dstPath, srcFile, count)
 }
 
-func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dst, infile string, count *int64) error {
+func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dstPath, srcFile string, count *int64) error {
 	cstreamParser := pdfcontent.NewContentStreamParser(contents)
 	operations, err := cstreamParser.Parse()
 	if err != nil {
@@ -168,7 +168,7 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dst, 
 				return err
 			}
 
-			if err := saveimage(dst, infile, gimg, count); err != nil {
+			if err := saveimage(dstPath, srcFile, gimg, count); err != nil {
 				return err
 			}
 		} else if op.Operand == "Do" && len(op.Params) == 1 {
@@ -204,7 +204,7 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dst, 
 					return err
 				}
 
-				saveimage(dst, infile, gimg, count)
+				saveimage(dstPath, srcFile, gimg, count)
 			} else if xtype == pdf.XObjectTypeForm {
 				// Go through the XObject Form content stream.
 				xform, err := resources.GetXObjectFormByName(*name)
@@ -224,7 +224,7 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dst, 
 				}
 
 				// Process the content stream in the Form object too:
-				if err := extImgsInContStream(string(formContent), formResources, dst, infile, count); err != nil {
+				if err := extImgsInContStream(string(formContent), formResources, dstPath, srcFile, count); err != nil {
 					return err
 				}
 			}
@@ -338,14 +338,14 @@ func getimgname(length int) string {
 	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }
 
-func carvefile(srcFile, dstPath string, buf *[]byte, count *int64) error {
+func carvefile(dstPath, srcFile string, buf *[]byte, count *int64) error {
 	if ispopdoc(buf, filepath.Ext(srcFile)) || ispdf(*buf) || filetype.IsImage(*buf) {
 		return nil
 	}
 
 	filetypedir(dstPath)
 	_, name := filepath.Split(srcFile)
-	fmt.Println("\nFile carver running on: ", name)
+	fmt.Printf("\rFile carver running on: %s", name)
 
 	finfo, err := os.Stat(srcFile)
 	if err != nil {
