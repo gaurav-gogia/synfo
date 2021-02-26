@@ -39,3 +39,8 @@ const (
 	AWDCMD = "awd"
 	EXTCMD = "ext"
 )
+
+// Constant error strings
+const (
+	ErrUnableToMount = "Unable to attach image, make sure that it's not already mounted"
+)
