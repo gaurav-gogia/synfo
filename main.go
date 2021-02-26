@@ -36,7 +36,7 @@ func getdata(dst, copydst string, ft string) error {
 
 	mntloc, copysrc, err := lib.Attach(dst)
 	if err != nil {
-		return err
+		return fmt.Errorf(lib.ErrUnableToMount)
 	}
 	lib.Extract(copysrc, copydst, ft)
 	err = lib.Detach(mntloc)
