@@ -12,11 +12,11 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [
-                "extract",
+                "ext",
                 "-src",
                 "/dev/disk2s1",
                 "-dst",
-                "./evidence/data1.iso"
+                "/./evi.iso"
             ]
         }
     ]
