@@ -29,8 +29,7 @@ func Attach(src string) (string, string, error) {
 			return "", "", err
 		}
 		mntloc := strings.Fields(string(out))[0]
-		copysrc := strings.Fields(string(out))[1]
-		return mntloc, copysrc, nil
+		return mntloc, mntpoint, nil
 	} else if runtime.GOOS == linux {
 		os.Mkdir(mntpoint, os.ModePerm)
 		err := exec.Command("mount", "-o", "loop", src, mntpoint).Run()
