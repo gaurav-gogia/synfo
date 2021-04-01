@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"golang.org/x/sys/unix"
 )
 
 // Clone function is the entrypoint for disk imaging, it runs disk imaging
@@ -30,25 +28,24 @@ func Clone(cli CommandLine) error {
 	if err != nil {
 		return err
 	}
-	defer unix.Close(read)
-	defer unix.Close(write)
+	defer read.Close()
+	defer write.Close()
 
-	for i := int64(0); i <= size; i += cli.BufferSize {
+	for i := int64(0); i < size; i += cli.BufferSize {
 		percent := (float64(i) / float64(size)) * 100
 		fmt.Printf("\rProgress .... %f%%", percent)
 
 		if i == size {
+			fmt.Printf("\rProgress .... %f%%", percent)
 			break
 		}
 
 		if size-i <= cli.BufferSize {
-			if err := copyData(size-i, read, write); err != nil {
-				return err
-			}
-		} else {
-			if err := copyData(cli.BufferSize, read, write); err != nil {
-				return err
-			}
+			cli.BufferSize = size - i
+		}
+
+		if err := copyData(cli.BufferSize, read, write); err != nil {
+			return err
 		}
 	}
 	fmt.Println()
@@ -59,39 +56,31 @@ func Clone(cli CommandLine) error {
 	return nil
 }
 
-func setup(src, dst string) (int, int, int64, error) {
+func setup(src, dst string) (*os.File, *os.File, int64, error) {
 	size, err := getsize(src)
 	if err != nil {
-		return 0, 0, 0, err
+		return nil, nil, 0, err
 	}
 
-	destination, err := create(dst)
-	if err != nil {
-		return 0, 0, 0, err
+	var read, write *os.File
+	if read, err = os.Open(src); err != nil {
+		return nil, nil, 0, err
 	}
-	destination.Close()
-
-	read, err := unix.Open(src, unix.O_RDONLY, 0777)
-	if err != nil {
-		return 0, 0, 0, err
-	}
-
-	write, err := unix.Open(dst, unix.O_WRONLY, 0777)
-	if err != nil {
-		return 0, 0, 0, err
+	if write, err = os.OpenFile(dst, os.O_WRONLY, 0600); err != nil {
+		return nil, nil, 0, err
 	}
 
 	return read, write, size, nil
 }
 
-func copyData(buffersize int64, read, write int) error {
+func copyData(buffersize int64, read, write *os.File) error {
 	buff := make([]byte, buffersize)
 
-	if _, err := unix.Read(read, buff); err != nil {
+	if _, err := read.Read(buff); err != nil {
 		return err
 	}
 
-	if _, err := unix.Write(write, buff); err != nil {
+	if _, err := write.Write(buff); err != nil {
 		return err
 	}
 
@@ -169,13 +158,6 @@ func gethashes(imgpath string) (string, string, error) {
 	hasha256 := hex.EncodeToString(hash.Sum(nil))
 
 	return hashmd5, hasha256, nil
-}
-
-func create(dst string) (*os.File, error) {
-	if dst == "-" {
-		return os.Stdout, nil
-	}
-	return os.Create(dst)
 }
 
 func confirm(dst string) bool {
