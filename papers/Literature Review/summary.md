@@ -73,3 +73,10 @@ A digital forensics framework for analysing local and synced artefacts. The fram
 Limitations:
 - The framework relies on truthfulness of local and syncing device times and logs that they are generating
 - The framework does not talk about mobile, tablet or other handheld devices that may be syncing data to the computer in question
+
+# Data Warehousing Based Computer Forensics Investigation Framework
+Authors:
+Conference: 2015 12th International Conference on Information Technology - New Generations
+DOI:
+
+A digital forensics framework that tries to make the analysis process more efficient through Data Warehousing techniques. The framework has integrity preservation mechanisms, access control and a Secure Forensic Audit Trail(SFAT) module for maintaining the chain of custody of the investigation. Data Warehouse section of the framework implements Relevant Resource Identification, Resource Extraction, Resource Transformation, Resource Loading, Resource Analysis, & Evidence Preservation. All these steps ensure relevant data is extracted and saved in a common format so that it becomes easier to process. Logged activities of the investigator are encrypted in a way that only a court of law can decrypt it.
