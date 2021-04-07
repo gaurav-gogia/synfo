@@ -64,3 +64,14 @@ DOI:
 In this paper, the proposed framework aims to categorize digital forensics artifacts and map them with Cyber Kill Chain(CKC) phases. It also proposes a step-by-step method for examining & analyzing cyber-attacks. The paper emphasises that its aim is to complement existing frameworks and processes. The steps include chosing a CKC phase, identifying all artifacts in that phase, correlate artifacts from one phase with others. Construct a chain of correlated artifacts and repeat. Analyze the final correlated artifacts to formulate an opinion. The paper also goes on to describe all the steps involved with a sample scenario.
 
 Limitations
+-  The paper seems to miss some parts like automation, OSINT and the analytical intracies involved during a forensics investigation. Cyber Kill Chain is more relevant for attacks attributed to APT groups.
+
+# A new web forensic framework for bot crime investigation
+Authors:
+Journal: Forensic Science International: Digital Investigation
+DOI:
+
+In this article, the proposed framework makes use of user behaviour analysis to classify wheather certain logs have been generated from a human user or an automated bot. Proposed framework in the article makes use of a custom logger that can store all the required parameters that the forensic framework needs. The framework makes use of timing pattern, movement pattern, pressure and error pattern analysis to take all the parameters for their classification. The framework does not collect any PII data to safeguard privacy of users. The framework collects statistical meta data instead of real values from forms.
+
+Limitations:
+- The framework relies on obfusction, third party libraries, access to javascript on client side and secrecy of their UBA algorithm. Changes at any point may disrupt the analysis process.
