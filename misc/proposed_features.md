@@ -22,7 +22,7 @@
 # Criminal behaviour detection
 - Weapon detection / classification
 
-# Audio Analytics
+# Audio Analytics (Low Priority)
 - Audio match
 - Audio to text
 
@@ -31,7 +31,7 @@
     - PoI Identification
     - Weapon Detection / Classification
 
-# Text Analytics
+# Text Analytics (Low Priority)
 - Semantic Analysis
 - Sentiment analysis
 
