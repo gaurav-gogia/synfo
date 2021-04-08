@@ -43,3 +43,8 @@
 ----------------------------------
 # Proposed DB to use
 - dgraph
+- influxdb
+----------------------------------
+
+# Memory Forensics
+- Use other memory forensics tools and see what capabilities can be enhanced
