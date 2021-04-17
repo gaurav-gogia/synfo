@@ -18,6 +18,7 @@
 # Fast processing
 - RAM Disk for data acquisition and analysis speed up
 - In-memory analysis and reporting
+- In-memory file system vs RAM Disk?
 
 # Criminal behaviour detection
 - Weapon detection / classification
@@ -39,6 +40,10 @@
 - Watermark
 - Logo
 - Pattern detection
+
+# Map Artifacts
+- CKC
+- MITRE ATT&CK TTPs
 
 ----------------------------------
 # Proposed DB to use
