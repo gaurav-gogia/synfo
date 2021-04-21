@@ -1,0 +1,21 @@
+# GUI Options
+
+1. Qt
+    Native
+    Go bindings available
+2. Flutter
+    Native
+    Material Design
+    Easy learning curve
+3. Wails
+    Web View
+    Multiple UI Options
+    Web Dev frontend stack
+    Go bindings
+
+
+# Memory Forensics
+- LiME, FTK Imager, AVML
+
+## AVML
+Reads /proc/iomem in linux for RAM acquisition
