@@ -17,7 +17,6 @@ import (
 	pdfcontent "github.com/unidoc/unidoc/pdf/contentstream"
 	pdfcore "github.com/unidoc/unidoc/pdf/core"
 	pdf "github.com/unidoc/unidoc/pdf/model"
-	"golang.org/x/sys/unix"
 )
 
 // Extract function takes in root dir, destination and choice.
@@ -357,11 +356,11 @@ func carvefile(dstPath, srcFile string, buf *[]byte, count *int64) error {
 		return errors.New("File is too big to be processed")
 	}
 
-	read, err := unix.Open(srcFile, unix.O_RDONLY, 0777)
+	read, err := os.Open(srcFile)
 	if err != nil {
 		return err
 	}
-	defer unix.Close(read)
+	defer read.Close()
 
 	if err := getjpg(dstPath, read, size, count); err != nil {
 		return err
@@ -376,13 +375,13 @@ func carvefile(dstPath, srcFile string, buf *[]byte, count *int64) error {
 	return nil
 }
 
-func getjpg(dstPath string, read int, size int64, count *int64) error {
+func getjpg(dstPath string, read *os.File, size int64, count *int64) error {
 	buff := make([]byte, 1)
 	var counter int8
 	var carved []byte
 
 	for i := int64(0); i < size; i++ {
-		if _, err := unix.Read(read, buff); err != nil {
+		if _, err := read.Read(buff); err != nil {
 			return err
 		}
 
@@ -435,17 +434,17 @@ func getjpg(dstPath string, read int, size int64, count *int64) error {
 	return nil
 }
 
-func getgif(dstPath string, read int, size int64, count *int64) error {
+func getgif(dstPath string, read *os.File, size int64, count *int64) error {
 	buff := make([]byte, 1)
 	var counter int8
 	var carved []byte
 
-	if _, err := unix.Seek(read, 0, 0); err != nil {
+	if _, err := read.Seek(0, 0); err != nil {
 		return err
 	}
 
 	for i := int64(0); i < size; i++ {
-		if _, err := unix.Read(read, buff); err != nil {
+		if _, err := read.Read(buff); err != nil {
 			return err
 		}
 
@@ -506,17 +505,17 @@ func getgif(dstPath string, read int, size int64, count *int64) error {
 	return nil
 }
 
-func getpng(dstPath string, read int, size int64, count *int64) error {
+func getpng(dstPath string, read *os.File, size int64, count *int64) error {
 	buff := make([]byte, 1)
 	var counter int8
 	var carved []byte
 
-	if _, err := unix.Seek(read, 0, 0); err != nil {
+	if _, err := read.Seek(0, 0); err != nil {
 		return err
 	}
 
 	for i := int64(0); i < size; i++ {
-		if _, err := unix.Read(read, buff); err != nil {
+		if _, err := read.Read(buff); err != nil {
 			return err
 		}
 
