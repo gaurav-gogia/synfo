@@ -40,6 +40,7 @@
 - Watermark
 - Logo
 - Pattern detection
+- Video Foregery
 
 # Map Artifacts
 - CKC
@@ -53,3 +54,27 @@
 
 # Memory Forensics
 - Use other memory forensics tools and see what capabilities can be enhanced
+
+# Crypto Forensics
+- Wallet search
+- Key search
+- Blocckahin/DB search
+
+# Improved Disk Imaging
+- Live / Dead Imaging
+- CRC Checks for header and data (or something better)
+- Multiple Files
+- Appending md5 or sha256 hashes of chunk files at the end
+
+# Improved Disk Image Reading
+- Mount in Virtual File System
+- Read without mount
+
+----------------------------------
+
+# User Action Traceback
+- History of fired commands in terminal
+
+----------------------------------
+# Misc Features
+- Maintain history of fired commands in CLI mode
