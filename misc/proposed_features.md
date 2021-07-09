@@ -18,7 +18,7 @@
 # Fast processing
 - RAM Disk for data acquisition and analysis speed up
 - In-memory analysis and reporting
-- In-memory file system vs RAM Disk?
+- In-memory file system
 
 # Criminal behaviour detection
 - Weapon detection / classification
@@ -68,8 +68,21 @@
 
 # Improved Disk Image Reading
 - Mount in Virtual File System
-- Read without mount
+- Read without mount (live disk imaging)
 
+# Triage analysis
+- Mount in read-only mode
+- Find potentially important documents:
+    - NLP/Sementic Analysis?
+    - Weapon Detection?
+    - Face Detection?
+    - Child Detection?
+- Allow users to save signatures for known malicious files?
+- Concurrent searching
+- Web Interface in local network
+- Should run on RPi Zero W
+- Get accurate UUID/Storage Device ID
+- Log all activities
 ----------------------------------
 
 # User Action Traceback
