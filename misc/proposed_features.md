@@ -9,19 +9,25 @@
 - Map data bits to preserve space
 - Homomorphic encryption?
 
-# OSINT
-- Collect APIs to download data from OSNs
-- Collect other relevant OSINT APIs
-- Agent for safe data download
-- Agent for safe data transfer
 
 # Fast processing
 - RAM Disk for data acquisition and analysis speed up
 - In-memory analysis and reporting
 - In-memory file system
 
-# Criminal behaviour detection
-- Weapon detection / classification
+# Text Analytics
+- Semantic Analysis
+- Sentiment analysis
+- Readability Score
+- YARA Signature Match
+- Foreign language detection
+- Macro detection
+
+# OSINT
+- Collect APIs to download data from OSNs
+- Collect other relevant OSINT APIs
+- Agent for safe data download
+- Agent for safe data transfer
 
 # Audio Analytics (Low Priority)
 - Audio match
@@ -31,10 +37,6 @@
 - Include features of image analytics
     - PoI Identification
     - Weapon Detection / Classification
-
-# Text Analytics (Low Priority)
-- Semantic Analysis
-- Sentiment analysis
 
 # Forgery detection
 - Watermark
@@ -91,3 +93,7 @@
 ----------------------------------
 # Misc Features
 - Maintain history of fired commands in CLI mode
+
+# StegAnalysis
+- Perceptual hashing
+- PoC test
