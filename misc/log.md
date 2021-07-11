@@ -19,3 +19,9 @@
 
 ## AVML
 Reads /proc/iomem in linux for RAM acquisition
+
+# Perceptual Hashing
+- Generating hashes of images based on visual features
+- Helps in comparing similarity of images
+- Works well on scaled up/down images with varying compression levels and formats
+- Multiple approaches exist for perceptual hashing
