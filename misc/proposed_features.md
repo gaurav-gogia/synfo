@@ -9,7 +9,6 @@
 - Map data bits to preserve space
 - Homomorphic encryption?
 
-
 # Fast processing
 - RAM Disk for data acquisition and analysis speed up
 - In-memory analysis and reporting
@@ -85,6 +84,12 @@
 - Should run on RPi Zero W
 - Get accurate UUID/Storage Device ID
 - Log all activities
+
+# Proactive DB sync
+- Malware signatures
+- IoC signatures
+- NSRL/NIST updates
+- Keyword update for criminal text
 ----------------------------------
 
 # User Action Traceback
