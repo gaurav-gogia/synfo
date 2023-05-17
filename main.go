@@ -3,22 +3,21 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime"
 	"time"
 
 	"synfo/lib"
 )
 
-func init() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-}
-
 func main() {
 	cli, err := lib.NewCli()
 	handle(err)
 
-	handle(lib.Clone(cli))
-	handle(getdata(cli.DST, cli.EviDir, cli.FileType))
+	if !cli.ImageAnalysis {
+		handle(lib.Clone(cli))
+		handle(getdata(cli.DST, cli.EviDir, cli.FileType))
+	} else {
+		handle(getdata(cli.SRC, cli.EviDir, cli.FileType))
+	}
 
 	switch cli.CmdType {
 	case lib.APDCMD:

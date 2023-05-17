@@ -28,9 +28,10 @@ const (
 	modelflaghelp = "ML Model type to be used for face detection {hog | cnn}."
 	ftflaghelp    = "Type of file(s) to be extracted {image | audio | video | archive}."
 
-	helpusageflag    = "Shows this help message."
-	exampleusageflag = "Shows example usage."
-	flashusageflag   = "Boosts disk imaging speed."
+	helpusageflag     = "Shows this help message."
+	exampleusageflag  = "Shows example usage."
+	flashusageflag    = "Boosts disk imaging speed."
+	imageanalysisflag = "Runs analysis on existing disk image instead of cloning it."
 )
 
 // Global command name constants

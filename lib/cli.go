@@ -21,7 +21,8 @@ type CommandLine struct {
 	FileType   string
 	Help       bool
 	Examples   bool
-	Flash      bool
+	// Flash         bool
+	ImageAnalysis bool
 }
 
 func (cli *CommandLine) usage() {
@@ -114,6 +115,8 @@ func basichelp(cmdname, cmduse string) {
 	fmt.Printf("\n\nOPTIONAL FLAGS:")
 	fmt.Printf("\n -bs [default: %d]", defaultBuffer)
 	fmt.Printf("\n\t%s", bsflaghelp)
+	// fmt.Printf("\n -f\n\t%s", flashusageflag)
+	fmt.Printf("\n -i\n\t%s", imageanalysisflag)
 }
 
 func (cli *CommandLine) validate() error {
@@ -159,7 +162,8 @@ func NewCli() (CommandLine, error) {
 		extcmd.BoolVar(&cli.Examples, "e", false, exampleusageflag)
 		extcmd.BoolVar(&cli.Examples, "examples", false, exampleusageflag)
 
-		extcmd.BoolVar(&cli.Flash, "flash", false, flashusageflag)
+		// extcmd.BoolVar(&cli.Flash, "f", false, flashusageflag)
+		extcmd.BoolVar(&cli.ImageAnalysis, "i", false, imageanalysisflag)
 		if err := extcmd.Parse(os.Args[2:]); err != nil {
 			return cli, err
 		}
@@ -174,7 +178,8 @@ func NewCli() (CommandLine, error) {
 		apdcmd.BoolVar(&cli.Examples, "e", false, exampleusageflag)
 		apdcmd.BoolVar(&cli.Examples, "examples", false, exampleusageflag)
 
-		apdcmd.BoolVar(&cli.Flash, "flash", false, flashusageflag)
+		// apdcmd.BoolVar(&cli.Flash, "flash", false, flashusageflag)
+		apdcmd.BoolVar(&cli.ImageAnalysis, "i", false, imageanalysisflag)
 		if err := apdcmd.Parse(os.Args[2:]); err != nil {
 			return cli, err
 		}
@@ -188,7 +193,8 @@ func NewCli() (CommandLine, error) {
 		awdcmd.BoolVar(&cli.Examples, "e", false, exampleusageflag)
 		awdcmd.BoolVar(&cli.Examples, "examples", false, exampleusageflag)
 
-		awdcmd.BoolVar(&cli.Flash, "flash", false, flashusageflag)
+		// awdcmd.BoolVar(&cli.Flash, "flash", false, flashusageflag)
+		awdcmd.BoolVar(&cli.ImageAnalysis, "i", false, imageanalysisflag)
 		if err := awdcmd.Parse(os.Args[2:]); err != nil {
 			return cli, err
 		}
@@ -233,14 +239,16 @@ func (cli *CommandLine) parseExt() {
 		cli.exthelp()
 	}
 
-	if cli.SRC == "" || cli.DST == "" {
+	if cli.SRC == "" {
 		cli.exthelp()
-	} else if strings.HasSuffix(cli.SRC, "/") || !(strings.HasPrefix(cli.SRC, "/dev/")) {
+	} else if cli.DST == "" && !cli.ImageAnalysis {
+		cli.exthelp()
+	} else if strings.HasSuffix(cli.SRC, "/") || !(strings.HasPrefix(cli.SRC, "/dev/")) && !cli.ImageAnalysis {
+		cli.exthelp()
+	} else if err := sanityCheck(cli.DST); err != nil {
 		cli.exthelp()
 	} else if strings.HasSuffix(cli.DST, "/") {
 		cli.DST = cli.DST + defaultDiskImage
-	} else if err := sanityCheck(cli.DST); err != nil {
-		cli.exthelp()
 	}
 
 	switch cli.FileType {
@@ -270,9 +278,11 @@ func (cli *CommandLine) parseApd() {
 		cli.apdhelp()
 	}
 
-	if cli.SRC == "" || cli.DST == "" || cli.PoI == "" {
+	if cli.SRC == "" || cli.PoI == "" {
 		cli.apdhelp()
-	} else if strings.HasSuffix(cli.SRC, "/") || !(strings.HasPrefix(cli.SRC, "/dev/")) {
+	} else if cli.DST == "" && !cli.ImageAnalysis {
+		cli.apdhelp()
+	} else if strings.HasSuffix(cli.SRC, "/") || !(strings.HasPrefix(cli.SRC, "/dev/")) && !cli.ImageAnalysis {
 		cli.apdhelp()
 	} else if strings.HasSuffix(cli.DST, "/") {
 		cli.DST = cli.DST + defaultDiskImage
@@ -306,9 +316,11 @@ func (cli *CommandLine) parseAwd() {
 		cli.awdhelp()
 	}
 
-	if cli.SRC == "" || cli.DST == "" {
+	if cli.SRC == "" {
 		cli.awdhelp()
-	} else if strings.HasSuffix(cli.SRC, "/") || !(strings.HasPrefix(cli.SRC, "/dev/")) {
+	} else if cli.DST == "" && !cli.ImageAnalysis {
+		cli.awdhelp()
+	} else if strings.HasSuffix(cli.SRC, "/") || !(strings.HasPrefix(cli.SRC, "/dev/")) && !cli.ImageAnalysis {
 		cli.awdhelp()
 	} else if strings.HasSuffix(cli.DST, "/") {
 		cli.DST = cli.DST + defaultDiskImage
