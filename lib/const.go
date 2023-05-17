@@ -43,5 +43,5 @@ const (
 
 // Constant error strings
 const (
-	ErrUnableToMount = "Unable to attach image, make sure that it's not already mounted"
+	ErrUnableToMount = "unable to attach image, make sure that it's not already mounted"
 )
