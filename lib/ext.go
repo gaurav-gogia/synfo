@@ -72,10 +72,10 @@ func getimgfrompdf(dstPath, srcFile string, buf *[]byte, count *int64) error {
 
 	if ispdf(*buf) {
 		f, err := os.Open(srcFile)
-		defer f.Close()
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 
 		pdfreader, err := pdf.NewPdfReader(f)
 		if err != nil {
@@ -88,7 +88,7 @@ func getimgfrompdf(dstPath, srcFile string, buf *[]byte, count *int64) error {
 		}
 
 		if isenc {
-			return errors.New("File is encrypted")
+			return errors.New("file is encrypted")
 		}
 
 		numPages, err := pdfreader.GetNumPages()
@@ -226,10 +226,10 @@ func saveimage(dstPath, infile string, img image.Image, count *int64) error {
 	name := fmt.Sprintf("%s_%s.jpg", fname, getimgname(4))
 
 	dstFile, err := os.Create(dstPath + name)
-	defer dstFile.Close()
 	if err != nil {
 		return err
 	}
+	defer dstFile.Close()
 
 	if err := png.Encode(dstFile, img); err != nil {
 		return err
@@ -341,7 +341,7 @@ func carvefile(dstPath, srcFile string, buf *[]byte, count *int64) error {
 
 	size := finfo.Size()
 	if size >= 2e+9 {
-		return errors.New("File is too big to be processed")
+		return errors.New("file is too big to be processed")
 	}
 
 	read, err := os.Open(srcFile)
