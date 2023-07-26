@@ -9,7 +9,6 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -28,7 +27,7 @@ func Extract(root, dst string, ft string) {
 		}
 
 		if !info.IsDir() {
-			buf, err := ioutil.ReadFile(filepath)
+			buf, err := os.ReadFile(filepath)
 			switch ft {
 			case IMAGE:
 				if err := copyimage(dst+"images/", info.Name(), &buf, &count); err != nil {
@@ -247,7 +246,7 @@ func copyimage(dstPath, name string, buf *[]byte, count *int64) error {
 
 	if filetype.IsImage(*buf) {
 		*count++
-		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
+		err = os.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rImage File Found: %s", name)
 	}
 
@@ -260,7 +259,7 @@ func copyvideo(dstPath, name string, buf *[]byte, count *int64) error {
 
 	if filetype.IsVideo(*buf) {
 		*count++
-		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
+		err = os.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rVideo File Found: %s", name)
 	}
 
@@ -273,7 +272,7 @@ func copyaudio(dstPath, name string, buf *[]byte, count *int64) error {
 
 	if filetype.IsAudio(*buf) {
 		*count++
-		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
+		err = os.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rAudio File Found: %s", name)
 	}
 
@@ -286,7 +285,7 @@ func copyarchive(dstPath, name string, buf *[]byte, count *int64) error {
 
 	if filetype.IsArchive(*buf) {
 		*count++
-		err = ioutil.WriteFile(dstPath+name, *buf, 0644)
+		err = os.WriteFile(dstPath+name, *buf, 0644)
 		fmt.Printf("\rArchive File Found: %s", name)
 	}
 
@@ -585,7 +584,7 @@ func getpng(dstPath string, read *os.File, size int64, count *int64) error {
 
 func writecarved(dstPath, ext string, data *[]byte, count *int64) error {
 	name := dstPath + getimgname(10) + "." + ext
-	if err := ioutil.WriteFile(name, *data, 0644); err != nil {
+	if err := os.WriteFile(name, *data, 0644); err != nil {
 		return err
 	}
 	*count++
