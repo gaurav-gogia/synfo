@@ -19,8 +19,6 @@ import (
 	pdf "github.com/unidoc/unidoc/pdf/model"
 )
 
-// Extract function takes in root dir, destination and choice.
-// Walks through entire file structure to copy files based on their magic numbers
 func Extract(root, dst string, ft string) {
 	var count int64
 	filepath.Walk(root, func(filepath string, info os.FileInfo, err error) error {
@@ -132,11 +130,8 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dstPa
 
 	processedXObjects := map[string]bool{}
 
-	// Range through all the content stream operations.
 	for _, op := range *operations {
 		if op.Operand == "BI" && len(op.Params) == 1 {
-			// BI: Inline image.
-
 			iimg, ok := op.Params[0].(*pdfcontent.ContentStreamInlineImage)
 			if !ok {
 				continue
@@ -152,7 +147,6 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dstPa
 				return err
 			}
 			if cs == nil {
-				// Default if not specified?
 				cs = pdf.NewPdfColorspaceDeviceGray()
 			}
 			fmt.Printf("Cs: %T\n", cs)
@@ -171,10 +165,8 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dstPa
 				return err
 			}
 		} else if op.Operand == "Do" && len(op.Params) == 1 {
-			// Do: XObject.
 			name := op.Params[0].(*pdfcore.PdfObjectName)
 
-			// Only process each one once.
 			_, has := processedXObjects[string(*name)]
 			if has {
 				continue
@@ -205,7 +197,6 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dstPa
 
 				saveimage(dstPath, srcFile, gimg, count)
 			} else if xtype == pdf.XObjectTypeForm {
-				// Go through the XObject Form content stream.
 				xform, err := resources.GetXObjectFormByName(*name)
 				if err != nil {
 					return err
@@ -216,13 +207,11 @@ func extImgsInContStream(contents string, resources *pdf.PdfPageResources, dstPa
 					return err
 				}
 
-				// Process the content stream in the Form object too:
 				formResources := xform.Resources
 				if formResources == nil {
 					formResources = resources
 				}
 
-				// Process the content stream in the Form object too:
 				if err := extImgsInContStream(string(formContent), formResources, dstPath, srcFile, count); err != nil {
 					return err
 				}
