@@ -66,7 +66,7 @@ func setup(src, dst string) (*os.File, *os.File, int64, error) {
 	if read, err = os.Open(src); err != nil {
 		return nil, nil, 0, err
 	}
-	if write, err = os.OpenFile(dst, os.O_WRONLY, 0600); err != nil {
+	if write, err = os.OpenFile(dst, os.O_CREATE|os.O_WRONLY, 0600); err != nil {
 		return nil, nil, 0, err
 	}
 
