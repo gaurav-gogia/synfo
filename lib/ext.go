@@ -2,6 +2,7 @@ package lib
 
 import (
 	"archive/zip"
+	"bytes"
 	"crypto/rand"
 	"encoding/base32"
 	"errors"
@@ -344,247 +345,53 @@ func carvefile(dstPath, srcFile string, buf *[]byte, count *int64) error {
 		return errors.New("file is too big to be processed")
 	}
 
-	read, err := os.Open(srcFile)
+	data, err := os.ReadFile(srcFile)
 	if err != nil {
 		return err
 	}
-	defer read.Close()
 
-	if err := getjpg(dstPath, read, size, count); err != nil {
+	if err := getpics(dstPath, "jpg", data, JPG_HEADER, JPG_FOOTER, count); err != nil {
 		return err
 	}
-	if err := getgif(dstPath, read, size, count); err != nil {
+	if err := getpics(dstPath, "png", data, PNG_HEADER, PNG_FOOTER, count); err != nil {
 		return err
 	}
-	if err := getpng(dstPath, read, size, count); err != nil {
+	if err := getpics(dstPath, "gif", data, GIF87A_HEADER, GIF_FOOTER, count); err != nil {
+		return err
+	}
+	if err := getpics(dstPath, "gif", data, GIF98A_HEADER, GIF_FOOTER, count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getjpg(dstPath string, read *os.File, size int64, count *int64) error {
-	buff := make([]byte, 1)
-	var counter int8
-	var carved []byte
+func getpics(dstPath, ext string, data, hdr, ftr []byte, count *int64) error {
+	start := bytes.Index(data, hdr)
+	end := bytes.Index(data, ftr)
 
-	for i := int64(0); i < size; i++ {
-		if _, err := read.Read(buff); err != nil {
-			return err
-		}
-
-		switch counter {
-		case 0:
-			if buff[0] == 0xff {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 1:
-			if buff[0] == 0xd8 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 2:
-			if buff[0] == 0xff {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 3:
-			if buff[0] == 0xff {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = append(carved, buff[0])
-			}
-		case 4:
-			if buff[0] == 0xd9 {
-				carved = append(carved, buff[0])
-				if err := writecarved(dstPath, "jpg", &carved, count); err != nil {
-					return err
-				}
-				carved = nil
-				counter = 0
-			} else {
-				carved = append(carved, buff[0])
-				counter--
-			}
-		}
-	}
-	return nil
-}
-
-func getgif(dstPath string, read *os.File, size int64, count *int64) error {
-	buff := make([]byte, 1)
-	var counter int8
-	var carved []byte
-
-	if _, err := read.Seek(0, 0); err != nil {
-		return err
-	}
-
-	for i := int64(0); i < size; i++ {
-		if _, err := read.Read(buff); err != nil {
-			return err
-		}
-
-		switch counter {
-		case 0:
-			if buff[0] == 0x47 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 1:
-			if buff[0] == 0x49 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 2:
-			if buff[0] == 0x46 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 3:
-			if buff[0] == 0x00 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = append(carved, buff[0])
-			}
-		case 4:
-			if buff[0] == 0x00 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = append(carved, buff[0])
-				counter--
-			}
-		case 5:
-			if buff[0] == 0x3b {
-				carved = append(carved, buff[0])
-				if err := writecarved(dstPath, "gif", &carved, count); err != nil {
-					return err
-				}
-				carved = nil
-				counter = 0
-			} else {
-				carved = append(carved, buff[0])
-				counter -= 2
-			}
-		}
-	}
-	return nil
-}
-
-func getpng(dstPath string, read *os.File, size int64, count *int64) error {
-	buff := make([]byte, 1)
-	var counter int8
-	var carved []byte
-
-	if _, err := read.Seek(0, 0); err != nil {
-		return err
-	}
-
-	for i := int64(0); i < size; i++ {
-		if _, err := read.Read(buff); err != nil {
-			return err
-		}
-
-		switch counter {
-		case 0:
-			if buff[0] == 0x89 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 1:
-			if buff[0] == 0x50 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 2:
-			if buff[0] == 0x4e {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 3:
-			if buff[0] == 0x47 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = nil
-				counter = 0
-			}
-		case 4:
-			if buff[0] == 0xae {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = append(carved, buff[0])
-			}
-		case 5:
-			if buff[0] == 0x42 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = append(carved, buff[0])
-				counter--
-			}
-		case 6:
-			if buff[0] == 0x60 {
-				carved = append(carved, buff[0])
-				counter++
-			} else {
-				carved = append(carved, buff[0])
-				counter -= 2
-			}
-		case 7:
-			if buff[0] == 0x82 {
-				carved = append(carved, buff[0])
-				if err := writecarved(dstPath, "png", &carved, count); err != nil {
-					return err
-				}
-				carved = nil
-				counter = 0
-			} else {
-				carved = append(carved, buff[0])
-				counter -= 3
+	for start != -1 || end != -1 {
+		end = end + len(ftr)
+		if start < end {
+			*count++
+			carved := data[start : end-1]
+			err := writecarved(dstPath, ext, carved, count)
+			if err != nil {
+				return err
 			}
 		}
 
+		data = data[end:]
+		start = bytes.Index(data, hdr)
+		end = bytes.Index(data, ftr)
 	}
 
 	return nil
 }
 
-func writecarved(dstPath, ext string, data *[]byte, count *int64) error {
+func writecarved(dstPath, ext string, data []byte, count *int64) error {
 	name := dstPath + getimgname(10) + "." + ext
-	if err := os.WriteFile(name, *data, 0644); err != nil {
+	if err := os.WriteFile(name, data, 0644); err != nil {
 		return err
 	}
 	*count++
