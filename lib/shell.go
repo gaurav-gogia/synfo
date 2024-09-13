@@ -120,9 +120,10 @@ func getnum(data string) (int64, error) {
 
 // PyApd function runs Automated PoI Detection
 // It takes following arguments:
-//		poitest - directory of extracted images
-//		poitrain - directory of known images with faces
-//		modeltype - an option for using hog or cnn model for apd
+//
+//	poitest - directory of extracted images
+//	poitrain - directory of known images with faces
+//	modeltype - an option for using hog or cnn model for apd
 func PyApd(poitest, poitrain, modeltype string) error {
 	start := time.Now()
 
@@ -135,12 +136,16 @@ func PyApd(poitest, poitrain, modeltype string) error {
 
 // PyAwd function runs Automated Weapon Detection on images
 // It takes following arguments:
-//		wepimages - directory of extrcated images
-func PyAwd(wepimages string) error {
+//
+//	imgsdir - directory of extrcated images
+func PyAwd(imgsdir string) error {
 	start := time.Now()
 
 	fmt.Println("\n\nRunning Weapon Detection ....")
-	err := exec.Command("python3", "./libpy/weapon.py", wepimages).Run()
+	err := exec.Command("python3", "./liby/weapon.py", imgsdir).Run()
+	if err != nil {
+		return err
+	}
 
 	fmt.Printf("\nWeapon Detection Time: %v\n", time.Since(start))
 	return err
